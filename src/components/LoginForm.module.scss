@@ -1,0 +1,14 @@
+.right {
+  .header {
+    color: rgba(1, 42, 255, 1)
+  }
+}
+.captchaContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  .loginCaptcha {
+    position: absolute;
+    right: 0;
+  }
+}
