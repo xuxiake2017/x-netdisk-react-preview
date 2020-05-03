@@ -1,80 +1,67 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    BrowserRouter as Router,
     Switch,
-    Route,
-    Link,
-    useParams,
-    useRouteMatch,
+    Route
 } from 'react-router-dom';
-import MaterialUIDemo1 from './MaterialUIDemo1';
-import Navbar from './components/NavBar';
 import Login from "./components/Login";
-import { connect } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { setClientHeight, setClientWidth } from "./actions";
-import { CssBaseline } from "@material-ui/core";
+import { CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
 import Home from "./components/Home";
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        clientHeight: state.appInfo.clientHeight,
-        clientWidth: state.appInfo.clientWidth
-    }
-}
+export default function App(props) {
 
-const mapDispatchToProps = (dispatch, ownProps) => {
-    return {
-        setClientHeight: (clientHeight) => {
-            dispatch(setClientHeight(clientHeight))
-        },
-        setClientWidth: (clientWidth) => {
-            dispatch(setClientWidth(clientWidth))
-        }
-    }
-}
+    const dispatch = useDispatch()
 
-class App extends React.Component {
-
-    componentDidMount() {
-
-        this.clientHeight = `${document.documentElement.clientHeight}`
-        this.clientWidth = `${document.documentElement.clientWidth}`
-        this.props.setClientHeight(this.clientHeight)
-        this.props.setClientWidth(this.clientWidth)
+    useEffect(() => {
+        // Update the document title using the browser API
+        let clientHeight = `${document.documentElement.clientHeight}`
+        let clientWidth = `${document.documentElement.clientWidth}`
+        setClientHeightHandler(clientHeight)
+        setClientWidthHandler(clientWidth)
         window.addEventListener('resize', () => {
-            this.clientHeight = `${document.documentElement.clientHeight}`
-            this.clientWidth = `${document.documentElement.clientWidth}`
-            this.props.setClientHeight(this.clientHeight)
-            this.props.setClientWidth(this.clientWidth)
+            clientHeight = `${document.documentElement.clientHeight}`
+            clientWidth = `${document.documentElement.clientWidth}`
+            setClientHeightHandler(clientHeight)
+            setClientWidthHandler(clientWidth)
         })
+    })
+
+    const setClientHeightHandler = (clientHeight) => {
+        dispatch(setClientHeight(clientHeight))
+    }
+    const setClientWidthHandler = (clientWidth) => {
+        dispatch(setClientWidth(clientWidth))
     }
 
-    componentWillUnmount() {
-    }
+    const themeType = useSelector(({ appInfo }) => {
+        return appInfo.palette.type
+    })
 
-    render() {
-        return (
-            <React.Fragment>
+    const theme = createMuiTheme({
+        palette: {
+            type: themeType
+        },
+    })
+
+    return (
+        <React.Fragment>
+            <ThemeProvider theme={theme}>
                 <CssBaseline/>
-                <Router>
-                    <div>
-                        <Switch>
-                            <Route path="/login">
-                                <Login/>
-                            </Route>
-                            <Route path="/home">
-                                <Home/>
-                            </Route>
-                        </Switch>
-                    </div>
-                </Router>
-            </React.Fragment>
-        )
-    }
+                <div>
+                    <Switch>
+                        <Route exact path="/">
+                            <Login/>
+                        </Route>
+                        <Route path="/login">
+                            <Login/>
+                        </Route>
+                        <Route path="/home">
+                            <Home/>
+                        </Route>
+                    </Switch>
+                </div>
+            </ThemeProvider>
+        </React.Fragment>
+    )
 }
-
-
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(App)

@@ -5,6 +5,7 @@ import CatImg from '../assets/cat1.jpg'
 import CaptchaImg from '../assets/captcha.png'
 import classnames from 'classnames'
 import LoginFormStyles from './LoginForm.module.scss'
+import { useHistory } from 'react-router-dom'
 
 const useStyles = makeStyles(theme => (
     {
@@ -71,21 +72,42 @@ const useStyles = makeStyles(theme => (
 const LoginForm = () => {
 
     const classes = useStyles()
-    const [username, setUsername] = React.useState('');
-    const [password, setPassword] = React.useState('');
-    const [captcha, setCaptcha] = React.useState('');
+    const history = useHistory()
+    // const [username, setUsername] = React.useState('');
+    // const [password, setPassword] = React.useState('');
+    // const [captcha, setCaptcha] = React.useState('');
+    const [loginData, setLoginData] = React.useState({
+        username: '',
+        password: '',
+        captcha: ''
+    });
     const [captchaSrc, setCaptchaSrc] = React.useState(CaptchaImg);
     const usernameChangeHandler = (event) => {
-        setUsername(event.target.value);
+        // setUsername(event.target.value);
+        setLoginData({
+            ...loginData,
+            username: event.target.value
+        })
     }
     const passwordChangeHandler = (event) => {
-        setPassword(event.target.value);
+        // setPassword(event.target.value);
+        setLoginData({
+            ...loginData,
+            password: event.target.value
+        })
     }
     const captchaChangeHandler = (event) => {
-        setCaptcha(event.target.value);
+        // setCaptcha(event.target.value);
+        setLoginData({
+            ...loginData,
+            captcha: event.target.value
+        })
     }
     const changeCaptcha = () => {
 
+    }
+    const loginHandler = () => {
+        history.push('/home')
     }
     return (
         <React.Fragment>
@@ -103,18 +125,18 @@ const LoginForm = () => {
                             登录
                         </Typography>
                         <Grid container justify={'center'}>
-                            <TextField id={'username'} label={'用户名'} fullWidth value={username} onChange={usernameChangeHandler}/>
+                            <TextField id={'username'} label={'用户名'} fullWidth value={loginData.username} onChange={usernameChangeHandler}/>
                         </Grid>
                         <Grid container justify={'center'}>
-                            <TextField id={'password'} label={'密码'} fullWidth value={password} onChange={passwordChangeHandler}/>
+                            <TextField id={'password'} label={'密码'} fullWidth value={loginData.password} onChange={passwordChangeHandler}/>
                         </Grid>
                         <Grid container justify={'center'} className={LoginFormStyles.captchaContainer}>
-                            <TextField id={'captcha'} label={'验证码'} fullWidth value={captcha} onChange={captchaChangeHandler}/>
+                            <TextField id={'captcha'} label={'验证码'} fullWidth value={loginData.captcha} onChange={captchaChangeHandler}/>
                             <div className={LoginFormStyles.loginCaptcha}>
                                 <img src={captchaSrc} onClick={changeCaptcha}/>
                             </div>
                         </Grid>
-                        <Button variant="contained" color="primary" size="medium" className={classnames(classes.margin, classes.alignSelf, classes.loginBtn)}>
+                        <Button variant="contained" color="primary" size="medium" className={classnames(classes.margin, classes.alignSelf, classes.loginBtn)} onClick={loginHandler}>
                             Start
                         </Button>
                     </Grid>

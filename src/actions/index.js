@@ -19,5 +19,19 @@ export const setClientWidth = clientWidth => {
     };
 };
 
+export const setPalette = palette => {
+    return {
+        type: "SET_PALETTE",
+        palette
+    };
+};
+
+export const setPaletteThemeType = themeType => {
+    return {
+        type: "SET_PALETTE_THEME_TYPE",
+        themeType
+    };
+};
+
 
 

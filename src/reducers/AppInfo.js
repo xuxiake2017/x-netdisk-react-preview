@@ -1,7 +1,10 @@
 const AppInfo = (state= {
     open: false,
     clientHeight: null,
-    clientWidth: null
+    clientWidth: null,
+    palette: {
+        type: 'light'
+    }
 }, action) => {
     switch (action.type) {
         case 'DRAWER_TOGGLE': {
@@ -20,6 +23,21 @@ const AppInfo = (state= {
             return {
                 ...state,
                 clientWidth: action.clientWidth
+            }
+        }
+        case 'SET_PALETTE': {
+            return {
+                ...state,
+                palette: action.palette
+            }
+        }
+        case 'SET_PALETTE_THEME_TYPE': {
+            return {
+                ...state,
+                palette: {
+                    ...state.palette,
+                    type: action.themeType
+                }
             }
         }
         default:

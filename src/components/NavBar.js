@@ -1,29 +1,49 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import MailIcon from '@material-ui/icons/Mail';
-import Badge from "@material-ui/core/Badge";
-import NotificationsIcon from "@material-ui/icons/Notifications";
-import AccountCircle from "@material-ui/icons/AccountCircle";
-import MoreIcon from "@material-ui/icons/MoreVert";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
+import {
+    Menu as MenuIcon,
+    Mail as MailIcon,
+    AccountCircle,
+    MoreVert as MoreIcon,
+    Description as DescriptionIcon,
+    Share as ShareIcon,
+    Image as ImageIcon,
+    OndemandVideo as OndemandVideoIcon,
+    MusicVideo as MusicVideoIcon,
+    ExpandLess,
+    ExpandMore,
+    FolderShared,
+    Delete as DeleteIcon,
+    Person as PersonIcon,
+    Notifications as NotificationsIcon,
+    Brightness4 as DarkThemeTypeIcon,
+    Brightness7 as LightThemeTypeIcon
+} from '@material-ui/icons';
 import {AccountArrowRight, AccountPlus} from "mdi-material-ui";
 import {
-    useHistory
+    useHistory,
+    useLocation
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { drawerToggleAction } from '../actions'
+import { drawerToggleAction, setPaletteThemeType } from '../actions'
+import {
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Collapse,
+    Menu,
+    MenuItem,
+    Badge,
+    Drawer,
+    AppBar,
+    Toolbar,
+    Typography,
+    Divider,
+    IconButton,
+    Tooltip
+} from "@material-ui/core";
 
 const drawerWidth = 240;
 
@@ -33,7 +53,8 @@ const useStyles = makeStyles((theme) => ({
         width: '100%'
     },
     appBar: {
-        zIndex: theme.zIndex.drawer + 1
+        zIndex: theme.zIndex.drawer + 1,
+        transition: 'background-color .4s'
     },
     menuButton: {
         marginRight: theme.spacing(2),
@@ -79,6 +100,12 @@ const useStyles = makeStyles((theme) => ({
     contentShift: {
         marginLeft: 0,
     },
+    nested: {
+        paddingLeft: theme.spacing(4),
+    },
+    menuList: {
+        padding: 0
+    }
 }));
 
 export default function PersistentDrawerLeft(props) {
@@ -89,18 +116,37 @@ export default function PersistentDrawerLeft(props) {
     const clientHeight = useSelector(state => {
         return state.appInfo.clientHeight
     })
+    const [collapseOpen, setCollapseOpen] = React.useState(false);
     const classes = useStyles({ clientWidth, clientHeight });
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
     const history = useHistory()
+    const location = useLocation()
 
     let open = useSelector(state => {
         return state.appInfo.open
     })
     const dispatch =  useDispatch()
 
-    const toggleDrawerOpen = () => {
-        dispatch(drawerToggleAction(!open))
+    const toggleDrawerOpen = useCallback(
+        (open) =>
+            dispatch(drawerToggleAction(open)),
+        [dispatch]
+    );
+    const toggleCollapseOpen = () => {
+        setCollapseOpen(!collapseOpen)
+    }
+
+    let themeType = useSelector(({ appInfo }) => {
+        return appInfo.palette.type
+    })
+
+    const settingThemeType = () => {
+        if (themeType === 'dark') {
+            dispatch(setPaletteThemeType('light'))
+        } else if (themeType === 'light') {
+            dispatch(setPaletteThemeType('dark'))
+        }
     }
 
     const isMenuOpen = Boolean(anchorEl);
@@ -185,12 +231,15 @@ export default function PersistentDrawerLeft(props) {
             <AppBar
                 position="fixed"
                 className={clsx(classes.appBar)}
+                color={themeType === 'dark' ? 'default' : 'primary'}
             >
                 <Toolbar>
                     <IconButton
                         color="inherit"
                         aria-label="open drawer"
-                        onClick={toggleDrawerOpen}
+                        onClick={() => {
+                            toggleDrawerOpen(!open)
+                        }}
                         edge="start"
                         className={clsx(classes.menuButton)}
                     >
@@ -201,6 +250,19 @@ export default function PersistentDrawerLeft(props) {
                     </Typography>
                     <div className={classes.grow} />
                     <div className={classes.sectionDesktop}>
+                        {themeType === 'dark' ? (
+                            <Tooltip title="切换日间模式">
+                                <IconButton color="inherit" onClick={settingThemeType}>
+                                    <DarkThemeTypeIcon/>
+                                </IconButton>
+                            </Tooltip>
+                        ) : (
+                            <Tooltip title="切换夜间模式">
+                                <IconButton color="inherit" onClick={settingThemeType}>
+                                    <LightThemeTypeIcon/>
+                                </IconButton>
+                            </Tooltip>
+                        )}
                         <IconButton aria-label="show 4 new mails" color="inherit">
                             <Badge badgeContent={4} color="secondary">
                                 <MailIcon />
@@ -249,30 +311,106 @@ export default function PersistentDrawerLeft(props) {
                 <div className={classes.drawerHeader}>
                 </div>
                 <Divider />
-                <div>
-                    <ListItem
-                        button
-                        key="登录"
-                        onClick={() => history.push("/login")}
-                    >
-                        <ListItemIcon>
-                            <AccountArrowRight
-                                className={classes.iconFix}
-                            />
-                        </ListItemIcon>
-                        <ListItemText primary="登录" />
-                    </ListItem>
-                    <ListItem
-                        button
-                        key="注册"
-                        onClick={() => history.push("/signup")}
-                    >
-                        <ListItemIcon>
-                            <AccountPlus className={classes.iconFix} />
-                        </ListItemIcon>
-                        <ListItemText primary="注册" />
-                    </ListItem>
-                </div>
+                {location.pathname !== '/home' && (
+                    <div>
+                        <List>
+                            <ListItem
+                                button
+                                key="登录"
+                                onClick={() => history.push("/login")}
+                            >
+                                <ListItemIcon>
+                                    <AccountArrowRight/>
+                                </ListItemIcon>
+                                <ListItemText primary="登录" />
+                            </ListItem>
+                            <ListItem
+                                button
+                                key="注册"
+                                onClick={() => history.push("/register")}
+                            >
+                                <ListItemIcon>
+                                    <AccountPlus className={classes.iconFix} />
+                                </ListItemIcon>
+                                <ListItemText primary="注册" />
+                            </ListItem>
+                        </List>
+                    </div>
+                )
+                }
+                {location.pathname === '/home' && (
+                    <div>
+                        <List className={classes.menuList}>
+                            <ListItem
+                                button
+                                onClick={toggleCollapseOpen}
+                            >
+                                <ListItemIcon>
+                                    <FolderShared/>
+                                </ListItemIcon>
+                                <ListItemText primary="文件" />
+                                {collapseOpen ? <ExpandLess /> : <ExpandMore />}
+                            </ListItem>
+                            <Collapse in={collapseOpen} timeout="auto">
+                                <List component="div" disablePadding className={classes.nested}>
+                                    <ListItem button>
+                                        <ListItemIcon>
+                                            <ImageIcon/>
+                                        </ListItemIcon>
+                                        <ListItemText primary="图片" />
+                                    </ListItem>
+                                    <ListItem button>
+                                        <ListItemIcon>
+                                            <OndemandVideoIcon/>
+                                        </ListItemIcon>
+                                        <ListItemText primary="视频" />
+                                    </ListItem>
+                                    <ListItem button>
+                                        <ListItemIcon>
+                                            <MusicVideoIcon/>
+                                        </ListItemIcon>
+                                        <ListItemText primary="音乐" />
+                                    </ListItem>
+                                    <ListItem button>
+                                        <ListItemIcon>
+                                            <DescriptionIcon/>
+                                        </ListItemIcon>
+                                        <ListItemText primary="文档" />
+                                    </ListItem>
+                                </List>
+                            </Collapse>
+                            <ListItem
+                                button
+                                onClick={() => history.push("/share")}
+                            >
+                                <ListItemIcon>
+                                    <ShareIcon/>
+                                </ListItemIcon>
+                                <ListItemText primary="分享" />
+                            </ListItem>
+                            <ListItem
+                                button
+                                onClick={() => history.push("/recycle")}
+                            >
+                                <ListItemIcon>
+                                    <DeleteIcon/>
+                                </ListItemIcon>
+                                <ListItemText primary="回收站" />
+                            </ListItem>
+                            <ListItem
+                                button
+                                onClick={() => history.push("/userInfo")}
+                            >
+                                <ListItemIcon>
+                                    <PersonIcon/>
+                                </ListItemIcon>
+                                <ListItemText primary="个人信息" />
+                            </ListItem>
+                        </List>
+                    </div>
+                )
+                }
+
             </Drawer>
             <main
                 className={clsx(classes.content, classes.contentProps, {
