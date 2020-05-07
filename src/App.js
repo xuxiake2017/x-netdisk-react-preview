@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { setClientHeight, setClientWidth } from "./actions";
 import { CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
 import Home from "./components/Home";
+import { GlobalStyle } from "./style/GlobalStyle";
 
 export default function App(props) {
 
@@ -47,6 +48,7 @@ export default function App(props) {
     return (
         <React.Fragment>
             <ThemeProvider theme={theme}>
+                <GlobalStyle/>
                 <CssBaseline/>
                 <div>
                     <Switch>

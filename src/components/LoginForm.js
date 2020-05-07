@@ -41,7 +41,7 @@ const useStyles = makeStyles(theme => (
         leftMask: {
             width: '100%',
             height: '100%',
-            background: 'rgba(1, 42, 255, 0.6)',
+            background: theme.palette.type === 'dark' ? 'rgba(43,41,41,0.6)' : 'rgba(1, 42, 255, 0.6)',
         },
         typography: {
             padding: theme.spacing(4)
@@ -52,7 +52,7 @@ const useStyles = makeStyles(theme => (
         right: {
             width: 390,
             height: 550,
-            backgroundColor: '#FFF',
+            backgroundColor: theme.palette.background.paper,
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
