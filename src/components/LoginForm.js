@@ -1,11 +1,21 @@
-import { TextField, Grid, Typography, Button } from "@material-ui/core";
+import {
+    TextField, Grid, Typography, Button, IconButton, InputLabel, FormControl, Input
+} from "@material-ui/core";
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import CatImg from '../assets/cat1.jpg'
-import CaptchaImg from '../assets/captcha.png'
+import LoginLeftBg from '../assets/login_left_bg.jpg'
 import classnames from 'classnames'
-import LoginFormStyles from './LoginForm.module.scss'
+// 引入scss测试
+import LoginFormStyles from '../style/LoginForm.module.scss'
 import { useHistory } from 'react-router-dom'
+import { RequestLogin } from "../api/user";
+import AppConf from "../conf/AppConf";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import {Visibility, VisibilityOff} from "@material-ui/icons";
+import Tooltip from "@material-ui/core/Tooltip";
+import { useDispatch } from "react-redux";
+import { openSuccessNotification, setUserInfo } from "../actions";
+import { setToken } from "../utils/auth";
 
 const useStyles = makeStyles(theme => (
     {
@@ -31,7 +41,7 @@ const useStyles = makeStyles(theme => (
         left: {
             width: 400,
             height: 400,
-            background: `url(${CatImg}) no-repeat center center`,
+            background: `url(${LoginLeftBg}) no-repeat center center`,
             backgroundSize: "contain",
             color: "white",
             [theme.breakpoints.down('sm')]: {
@@ -41,7 +51,9 @@ const useStyles = makeStyles(theme => (
         leftMask: {
             width: '100%',
             height: '100%',
-            background: theme.palette.type === 'dark' ? 'rgba(43,41,41,0.6)' : 'rgba(1, 42, 255, 0.6)',
+            // background: theme.palette.type === 'dark' ? 'rgba(43,41,41,0.6)' : 'rgba(1, 42, 255, 0.6)',
+            background: theme.palette.type === 'dark' ? 'rgba(0,0,0,0.6)' : 'linear-gradient(to top , rgba(247,167,102,0.5), rgba(1, 42, 255, 0.5))',
+            transition: 'background-color .4s'
         },
         typography: {
             padding: theme.spacing(4)
@@ -67,47 +79,50 @@ const useStyles = makeStyles(theme => (
             borderRadius: '20px',
             width: '50%'
         },
+        formControl: {
+            width: '100%',
+        }
     }
 ))
 const LoginForm = () => {
 
     const classes = useStyles()
     const history = useHistory()
-    // const [username, setUsername] = React.useState('');
-    // const [password, setPassword] = React.useState('');
-    // const [captcha, setCaptcha] = React.useState('');
+    const dispatch = useDispatch()
     const [loginData, setLoginData] = React.useState({
         username: '',
         password: '',
         captcha: ''
     });
-    const [captchaSrc, setCaptchaSrc] = React.useState(CaptchaImg);
-    const usernameChangeHandler = (event) => {
-        // setUsername(event.target.value);
+    const [captchaSrc, setCaptchaSrc] = React.useState(`${AppConf.baseUrl()}/user/createImg?${new Date().getTime()}`);
+    const [showPassword, setShowPassword] = React.useState(false);
+    const changeHandler = (event) => {
+        const textFieldName = event.target.name
         setLoginData({
             ...loginData,
-            username: event.target.value
-        })
-    }
-    const passwordChangeHandler = (event) => {
-        // setPassword(event.target.value);
-        setLoginData({
-            ...loginData,
-            password: event.target.value
-        })
-    }
-    const captchaChangeHandler = (event) => {
-        // setCaptcha(event.target.value);
-        setLoginData({
-            ...loginData,
-            captcha: event.target.value
+            [textFieldName]: event.target.value
         })
     }
     const changeCaptcha = () => {
-
+        setCaptchaSrc(`${AppConf.baseUrl()}/user/createImg?${new Date().getTime()}`)
     }
     const loginHandler = () => {
-        history.push('/home')
+        const params = {
+            loginInfo: loginData.username,
+            password: loginData.password,
+            imgCode: loginData.captcha,
+        }
+        RequestLogin(params).then(res => {
+            console.log(res)
+            setToken(res.data.token)
+            dispatch(setUserInfo(res.data))
+            dispatch(openSuccessNotification('登录成功!'))
+            history.push('/home')
+        })
+    }
+    const handleClickShowPassword = (e) => {
+        e.preventDefault()
+        setShowPassword(!showPassword)
     }
     return (
         <React.Fragment>
@@ -116,7 +131,7 @@ const LoginForm = () => {
                     <div className={classes.left}>
                         <div className={`${classes.leftMask}`}>
                             <Typography variant={'h4'} className={classes.typography}>
-                                SEND YOUR CAT TO MARS
+                                CEASE TO STRUGGLE AND YOU CEASE TO LIVE
                             </Typography>
                         </div>
                     </div>
@@ -125,16 +140,38 @@ const LoginForm = () => {
                             登录
                         </Typography>
                         <Grid container justify={'center'}>
-                            <TextField id={'username'} label={'用户名'} fullWidth value={loginData.username} onChange={usernameChangeHandler}/>
+                            <TextField name={'username'} id={'username'} label={'用户名'} fullWidth value={loginData.username} onChange={changeHandler}/>
                         </Grid>
                         <Grid container justify={'center'}>
-                            <TextField id={'password'} label={'密码'} fullWidth value={loginData.password} onChange={passwordChangeHandler}/>
+                            {/*<TextField name={'password'} id={'password'} label={'密码'} fullWidth value={loginData.password} onChange={changeHandler}/>*/}
+                            <FormControl className={classes.formControl}>
+                                <InputLabel htmlFor="filled-adornment-password">密码</InputLabel>
+                                <Input
+                                    name={'password'}
+                                    id="standard-adornment-password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={loginData.password}
+                                    onChange={changeHandler}
+                                    endAdornment={
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={handleClickShowPassword}
+                                            >
+                                                {showPassword ? <Visibility /> : <VisibilityOff />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    }
+                                />
+                            </FormControl>
                         </Grid>
                         <Grid container justify={'center'} className={LoginFormStyles.captchaContainer}>
-                            <TextField id={'captcha'} label={'验证码'} fullWidth value={loginData.captcha} onChange={captchaChangeHandler}/>
-                            <div className={LoginFormStyles.loginCaptcha}>
-                                <img src={captchaSrc} onClick={changeCaptcha}/>
-                            </div>
+                            <TextField name={'captcha'} id={'captcha'} label={'验证码'} fullWidth value={loginData.captcha} onChange={changeHandler}/>
+                            <Tooltip title={'点击更换'}>
+                                <div className={LoginFormStyles.loginCaptcha}>
+                                    <img src={captchaSrc} onClick={changeCaptcha}/>
+                                </div>
+                            </Tooltip>
                         </Grid>
                         <Button variant="contained" color="primary" size="medium" className={classnames(classes.margin, classes.alignSelf, classes.loginBtn)} onClick={loginHandler}>
                             Start

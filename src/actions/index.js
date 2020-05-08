@@ -33,5 +33,39 @@ export const setPaletteThemeType = themeType => {
     };
 };
 
+export const openNotification = notification => {
+    return {
+        type: "OPEN_NOTIFICATION",
+        notification
+    };
+};
+
+export const openSuccessNotification = message => {
+    return {
+        type: "OPEN_SUCCESS_NOTIFICATION",
+        message
+    };
+};
+
+export const openErrNotification = message => {
+    return {
+        type: "OPEN_ERR_NOTIFICATION",
+        message
+    };
+};
+
+export const closeNotification = () => {
+    return {
+        type: "CLOSE_NOTIFICATION"
+    };
+};
+
+export const setUserInfo = (userInfo) => {
+    return {
+        type: "SET_USER_INFO",
+        userInfo
+    };
+};
+
 
 

@@ -4,6 +4,12 @@ const AppInfo = (state= {
     clientWidth: null,
     palette: {
         type: 'light'
+    },
+    notification: {
+        open: false,
+        autoHideDuration: 3000,
+        severity: 'info',
+        message: '通知'
     }
 }, action) => {
     switch (action.type) {
@@ -37,6 +43,46 @@ const AppInfo = (state= {
                 palette: {
                     ...state.palette,
                     type: action.themeType
+                }
+            }
+        }
+        case 'OPEN_NOTIFICATION': {
+            return {
+                ...state,
+                notification: {
+                    ...action.notification,
+                    open: true
+                }
+            }
+        }
+        case 'OPEN_SUCCESS_NOTIFICATION': {
+            return {
+                ...state,
+                notification: {
+                    ...state.notification,
+                    open: true,
+                    severity: 'success',
+                    message: action.message
+                }
+            }
+        }
+        case 'OPEN_ERR_NOTIFICATION': {
+            return {
+                ...state,
+                notification: {
+                    ...state.notification,
+                    open: true,
+                    severity: 'error',
+                    message: action.message
+                }
+            }
+        }
+        case 'CLOSE_NOTIFICATION': {
+            return {
+                ...state,
+                notification: {
+                    ...state.notification,
+                    open: false
                 }
             }
         }

@@ -9,10 +9,15 @@ import { setClientHeight, setClientWidth } from "./actions";
 import { CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
 import Home from "./components/Home";
 import { GlobalStyle } from "./style/GlobalStyle";
+import { useHistory } from "react-router-dom";
+import Notification from "./components/Notification";
+import AuthRoute from "./components/AuthRoute";
+import Register from "./components/Register";
 
 export default function App(props) {
 
     const dispatch = useDispatch()
+    const history = useHistory()
 
     useEffect(() => {
         // Update the document title using the browser API
@@ -50,17 +55,21 @@ export default function App(props) {
             <ThemeProvider theme={theme}>
                 <GlobalStyle/>
                 <CssBaseline/>
+                <Notification/>
                 <div>
                     <Switch>
-                        <Route exact path="/">
+                        <AuthRoute exact path="/">
                             <Login/>
-                        </Route>
-                        <Route path="/login">
+                        </AuthRoute>
+                        <AuthRoute path="/login">
                             <Login/>
-                        </Route>
-                        <Route path="/home">
+                        </AuthRoute>
+                        <AuthRoute path="/home">
                             <Home/>
-                        </Route>
+                        </AuthRoute>
+                        <AuthRoute path="/register">
+                            <Register/>
+                        </AuthRoute>
                     </Switch>
                 </div>
             </ThemeProvider>

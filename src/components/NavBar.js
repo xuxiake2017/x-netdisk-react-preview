@@ -42,8 +42,11 @@ import {
     Typography,
     Divider,
     IconButton,
-    Tooltip
+    Tooltip,
+    Avatar
 } from "@material-ui/core";
+import { Logout } from '../api/user'
+import { removeToken } from "../utils/auth";
 
 const drawerWidth = 240;
 
@@ -105,7 +108,11 @@ const useStyles = makeStyles((theme) => ({
     },
     menuList: {
         padding: 0
-    }
+    },
+    avatar: {
+        width: theme.spacing(4),
+        height: theme.spacing(4),
+    },
 }));
 
 export default function PersistentDrawerLeft(props) {
@@ -165,6 +172,18 @@ export default function PersistentDrawerLeft(props) {
         handleMobileMenuClose();
     };
 
+    const handleLogout = () => {
+        handleMenuClose()
+        Logout().then(res => {
+            removeToken()
+            window.location.reload()
+        })
+    };
+
+    const userInfo = useSelector(({userInfo}) => {
+        return userInfo
+    })
+
     const handleMobileMenuOpen = (event) => {
         setMobileMoreAnchorEl(event.currentTarget);
     };
@@ -180,8 +199,8 @@ export default function PersistentDrawerLeft(props) {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-            <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+            <MenuItem onClick={handleMenuClose}>用户信息</MenuItem>
+            <MenuItem onClick={handleLogout}>退出账户</MenuItem>
         </Menu>
     );
 
@@ -281,7 +300,7 @@ export default function PersistentDrawerLeft(props) {
                             onClick={handleProfileMenuOpen}
                             color="inherit"
                         >
-                            <AccountCircle />
+                            {userInfo ? <Avatar className={classes.avatar} src={userInfo.avatar}/> : <AccountCircle /> }
                         </IconButton>
                     </div>
                     <div className={classes.sectionMobile}>

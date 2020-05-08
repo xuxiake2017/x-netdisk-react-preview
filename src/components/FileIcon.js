@@ -8,10 +8,11 @@ import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import ContentLoader from 'react-content-loader'
+import PropTypes from 'prop-types'
 
 const useStyles = makeStyles((theme) => ({
         container: {
-            padding: "7px"
+            padding: "14px"
         },
 
         selected: {
@@ -129,39 +130,43 @@ const FileIcon = (props) => {
                 onClick={handleClick}
             >
                 {/*文件有预览图显示图片*/}
-                <div className={classes.preview}>
-                    {/*图片懒加载*/}
-                    <LazyLoadImage
-                        className={classNames(classes.picPreview)}
-                        src={'http://www.xikcloud.com:8181/group1/M00/00/00/wKgACl6g---AQoNNAAEaheNx18A470.jpg'}
-                        afterLoad={() => {}}
-                        beforeLoad={() => {}}
-                        onError={() => {}}
-                    />
-                    {/*加载占位组件*/}
-                    <ContentLoader
-                        height={150}
-                        width={170}
-                        className={classNames(classes.loadingAnimation)}
-                    >
-                        <rect
-                            x="0"
-                            y="0"
-                            width="100%"
-                            height="150"
-                        />
-                    </ContentLoader>
-                </div>
+                {!props.isDir && (
+                    <React.Fragment>
+                        <div className={classes.preview}>
+                            {/*图片懒加载*/}
+                            <LazyLoadImage
+                                className={classNames(classes.picPreview)}
+                                src={'http://www.xikcloud.com:8181/group1/M00/00/00/wKgACl6g---AQoNNAAEaheNx18A470.jpg'}
+                                afterLoad={() => {}}
+                                beforeLoad={() => {}}
+                                onError={() => {}}
+                            />
+                            {/*加载占位组件*/}
+                            <ContentLoader
+                                height={150}
+                                width={170}
+                                className={classNames(classes.loadingAnimation)}
+                            >
+                                <rect
+                                    x="0"
+                                    y="0"
+                                    width="100%"
+                                    height="150"
+                                />
+                            </ContentLoader>
+                        </div>
+                        <Divider />
+                    </React.Fragment>
+                )}
                 {/*文件没有预览图显示图标*/}
                 {/*<div className={classes.previewIcon}>*/}
                 {/*    <MySvgIcon name={'icon-file_word_office'} className={classes.iconBig}/>*/}
                 {/*</div>*/}
-                <Divider />
                 <div className={classes.fileInfo}>
                     <div
                         className={classNames(classes.icon)}
                     >
-                        <MySvgIcon name={'icon-file_word_office'} height={'30px'} width={'30px'}/>
+                        {props.isDir ? <MySvgIcon name={'icon-file_dir'} height={'30px'} width={'30px'}/> : <MySvgIcon name={'icon-file_word_office'} height={'30px'} width={'30px'}/>}
                     </div>
                     <Tooltip
                         title={'标题'}
@@ -181,6 +186,14 @@ const FileIcon = (props) => {
             </ButtonBase>
         </div>
     )
+}
+
+FileIcon.propTypes = {
+    isDir: PropTypes.bool
+}
+
+FileIcon.defaultProps = {
+    isDir: false
 }
 
 export default FileIcon
