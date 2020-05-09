@@ -9,6 +9,7 @@ import React from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import ContentLoader from 'react-content-loader'
 import PropTypes from 'prop-types'
+import fileIcoFilter from "../utils/FileUtils";
 
 const useStyles = makeStyles((theme) => ({
         container: {
@@ -115,6 +116,10 @@ const FileIcon = (props) => {
     let [isSelected, setIsSelected] = React.useState(false);
     const handleClick = (e) => {
         setIsSelected(!isSelected)
+        props.onClick()
+    }
+    const handleDoubleClick = (e) => {
+        props.onDoubleClick()
     }
     return (
         <div className={classes.container}>
@@ -128,49 +133,50 @@ const FileIcon = (props) => {
                     classes.button
                 )}
                 onClick={handleClick}
+                onDoubleClick={handleDoubleClick}
             >
-                {/*文件有预览图显示图片*/}
-                {!props.isDir && (
+                {props.file.isDir === 1 && (
                     <React.Fragment>
-                        <div className={classes.preview}>
-                            {/*图片懒加载*/}
-                            <LazyLoadImage
-                                className={classNames(classes.picPreview)}
-                                src={'http://www.xikcloud.com:8181/group1/M00/00/00/wKgACl6g---AQoNNAAEaheNx18A470.jpg'}
-                                afterLoad={() => {}}
-                                beforeLoad={() => {}}
-                                onError={() => {}}
-                            />
-                            {/*加载占位组件*/}
-                            <ContentLoader
-                                height={150}
-                                width={170}
-                                className={classNames(classes.loadingAnimation)}
-                            >
-                                <rect
-                                    x="0"
-                                    y="0"
-                                    width="100%"
-                                    height="150"
-                                />
-                            </ContentLoader>
+                        {/*文件有预览图显示图片*/}
+                        {/*<div className={classes.preview}>*/}
+                        {/*    /!*图片懒加载*!/*/}
+                        {/*    <LazyLoadImage*/}
+                        {/*        className={classNames(classes.picPreview)}*/}
+                        {/*        src={'http://www.xikcloud.com:8181/group1/M00/00/00/wKgACl6g---AQoNNAAEaheNx18A470.jpg'}*/}
+                        {/*        afterLoad={() => {}}*/}
+                        {/*        beforeLoad={() => {}}*/}
+                        {/*        onError={() => {}}*/}
+                        {/*    />*/}
+                        {/*    /!*加载占位组件*!/*/}
+                        {/*    <ContentLoader*/}
+                        {/*        height={150}*/}
+                        {/*        width={170}*/}
+                        {/*        className={classNames(classes.loadingAnimation)}*/}
+                        {/*    >*/}
+                        {/*        <rect*/}
+                        {/*            x="0"*/}
+                        {/*            y="0"*/}
+                        {/*            width="100%"*/}
+                        {/*            height="150"*/}
+                        {/*        />*/}
+                        {/*    </ContentLoader>*/}
+                        {/*</div>*/}
+                        {/*文件没有预览图显示图标*/}
+                        <div className={classes.previewIcon}>
+                            <MySvgIcon name={fileIcoFilter(props.file.fileType)} className={classes.iconBig}/>
                         </div>
                         <Divider />
                     </React.Fragment>
                 )}
-                {/*文件没有预览图显示图标*/}
-                {/*<div className={classes.previewIcon}>*/}
-                {/*    <MySvgIcon name={'icon-file_word_office'} className={classes.iconBig}/>*/}
-                {/*</div>*/}
                 <div className={classes.fileInfo}>
                     <div
                         className={classNames(classes.icon)}
                     >
-                        {props.isDir ? <MySvgIcon name={'icon-file_dir'} height={'30px'} width={'30px'}/> : <MySvgIcon name={'icon-file_word_office'} height={'30px'} width={'30px'}/>}
+                        <MySvgIcon name={fileIcoFilter(props.file.fileType)} height={'30px'} width={'30px'}/>
                     </div>
                     <Tooltip
-                        title={'标题'}
-                        aria-label={'标题'}
+                        title={props.file.fileName}
+                        aria-label={props.file.fileName}
                     >
                         <Typography
                             variant="body2"
@@ -179,7 +185,7 @@ const FileIcon = (props) => {
                                 [classes.folderNameNotSelected]: !isSelected
                             })}
                         >
-                            {'标题1111111111111111111111111111111111111111111111111111'}
+                            {props.file.fileName}
                         </Typography>
                     </Tooltip>
                 </div>
@@ -189,11 +195,21 @@ const FileIcon = (props) => {
 }
 
 FileIcon.propTypes = {
-    isDir: PropTypes.bool
-}
-
-FileIcon.defaultProps = {
-    isDir: false
+    file: PropTypes.shape({
+        isDir: PropTypes.number,
+        fileName: PropTypes.string,
+        filePath: PropTypes.string,
+        userId: PropTypes.number,
+        parentId: PropTypes.number,
+        key: PropTypes.string,
+        createTime: PropTypes.number,
+        updateTime: PropTypes.number,
+        fileExtName: PropTypes.string,
+        fileSize: PropTypes.number,
+        fileType: PropTypes.number
+    }).isRequired,
+    onClick: PropTypes.func,
+    onDoubleClick: PropTypes.func
 }
 
 export default FileIcon

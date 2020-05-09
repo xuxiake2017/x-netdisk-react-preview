@@ -6,7 +6,7 @@ const MySvgIcon = (props) => {
     return (
         <Box>
             <svg className={`icon ${props.className}`} aria-hidden="true" style={{width: props.width, height: props.height}}>
-                <use xlinkHref={`#${props.name}`}></use>
+                <use xlinkHref={`${props.name}`}></use>
             </svg>
         </Box>
     )

@@ -3,7 +3,7 @@ import qs from 'qs'
 import AppConf from "../conf/AppConf";
 import store from "../store/store";
 import { openNotification } from "../actions";
-import { getToken } from "./auth";
+import { getToken, removeToken } from "./auth";
 
 // 创建axios实例
 const service = axios.create({
@@ -45,6 +45,13 @@ service.interceptors.response.use(
                 severity: 'error',
                 message: response.data.msg
             }))
+            // 登录过期
+            if (res.code === 20016) {
+                removeToken()
+                window.setInterval(() => {
+                    window.location.reload()
+                }, 1000)
+            }
             return Promise.reject('error')
         } else {
             return response.data

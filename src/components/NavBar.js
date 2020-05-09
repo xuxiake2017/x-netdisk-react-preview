@@ -26,7 +26,7 @@ import {
     useLocation
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { drawerToggleAction, setPaletteThemeType } from '../actions'
+import { drawerToggleAction, setPaletteThemeType, openSuccessNotification } from '../actions'
 import {
     List,
     ListItem,
@@ -47,6 +47,7 @@ import {
 } from "@material-ui/core";
 import { Logout } from '../api/user'
 import { removeToken } from "../utils/auth";
+import ConfirmDialog from "./ConfirmDialog";
 
 const drawerWidth = 240;
 
@@ -173,11 +174,8 @@ export default function PersistentDrawerLeft(props) {
     };
 
     const handleLogout = () => {
+        setLogoutDialogOpen(true)
         handleMenuClose()
-        Logout().then(res => {
-            removeToken()
-            window.location.reload()
-        })
     };
 
     const userInfo = useSelector(({userInfo}) => {
@@ -245,8 +243,22 @@ export default function PersistentDrawerLeft(props) {
         </Menu>
     );
 
+    const [logoutDialogOpen, setLogoutDialogOpen] = React.useState(false)
+    const handleLogoutDialogClose = () => {
+        setLogoutDialogOpen(false)
+    }
+    const handleLogoutConfirm = () => {
+        setLogoutDialogOpen(false)
+        Logout().then(res => {
+            dispatch(openSuccessNotification('退出登陆成功!'))
+            removeToken()
+            window.location.reload()
+        })
+    }
+
     return (
         <div className={classes.root}>
+            <ConfirmDialog open={logoutDialogOpen} title={'提示'} contentText={'你确认退出登陆吗?'} onClose={handleLogoutDialogClose} onConfirm={handleLogoutConfirm}/>
             <AppBar
                 position="fixed"
                 className={clsx(classes.appBar)}

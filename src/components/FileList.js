@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {Grid, Typography} from "@material-ui/core";
 import FileIcon from "./FileIcon";
 import { makeStyles } from "@material-ui/core/styles";
-import { GetFileList } from "../api/file";
+import PropTypes from "prop-types";
 
 const useStyles = makeStyles((theme) => ({
     typeHeader: {
@@ -12,76 +12,103 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
-const FileList = () => {
+const FileList = (props) => {
     const classes = useStyles()
-    useEffect(() => {
-        getFileList()
-    })
-    const getFileList = () => {
-        const params = {}
-        GetFileList(params).then(res => {
-            console.log(res)
-        })
+    const handleFileClick = (file) => {
+        props.onFileClick(file)
+    }
+    const handleFileDoubleClick = (file) => {
+        props.onFileDoubleClick(file)
     }
     return (
         <React.Fragment>
-            <div>
-                <Typography
-                    variant="body2"
-                    className={classes.typeHeader}
-                >
-                    文件夹
-                </Typography>
-                <Grid
-                    container
-                    spacing={0}
-                    alignItems="flex-start"
-                >
-                    <Grid
-                        item
-                        xs={6}
-                        md={3}
-                        sm={4}
-                        lg={2}
+            {props.dirList.length > 0 && (
+                <div>
+                    <Typography
+                        variant="body2"
+                        className={classes.typeHeader}
                     >
-                        <FileIcon isDir/>
-                    </Grid>
-                </Grid>
-            </div>
-            <div>
-                <Typography
-                    variant="body2"
-                    className={classes.typeHeader}
-                >
-                    文件
-                </Typography>
-                <Grid
-                    container
-                    spacing={0}
-                    alignItems="flex-start"
-                >
+                        文件夹
+                    </Typography>
                     <Grid
-                        item
-                        xs={6}
-                        md={3}
-                        sm={4}
-                        lg={2}
+                        container
+                        spacing={0}
+                        alignItems="flex-start"
                     >
-                        <FileIcon/>
+                        {props.dirList.map(file => (
+                            <Grid item xs={6} md={3} sm={4} lg={2} key={file.key}>
+                                <FileIcon file={file} onClick={() => {
+                                    handleFileClick(file)
+                                }} onDoubleClick={() => {
+                                    handleFileDoubleClick(file)
+                                }}/>
+                            </Grid>
+                        ))}
                     </Grid>
+                </div>
+            )}
+            {props.fileList.length > 0 && (
+                <div>
+                    <Typography
+                        variant="body2"
+                        className={classes.typeHeader}
+                    >
+                        文件
+                    </Typography>
                     <Grid
-                        item
-                        xs={6}
-                        md={3}
-                        sm={4}
-                        lg={2}
+                        container
+                        spacing={0}
+                        alignItems="flex-start"
                     >
-                        <FileIcon/>
+                        {props.fileList.map(file => (
+                            <Grid item xs={6} md={3} sm={4} lg={2} key={file.key}>
+                                <FileIcon file={file} onClick={() => {
+                                    handleFileClick(file)
+                                }} onDoubleClick={() => {
+                                    handleFileDoubleClick(file)
+                                }}/>
+                            </Grid>
+                        ))}
                     </Grid>
-                </Grid>
-            </div>
+                </div>
+            )}
         </React.Fragment>
     )
+}
+
+FileList.propTypes = {
+    dirList: PropTypes.arrayOf(
+        PropTypes.shape({
+            isDir: PropTypes.number,
+            fileName: PropTypes.string,
+            filePath: PropTypes.string,
+            userId: PropTypes.number,
+            parentId: PropTypes.number,
+            key: PropTypes.string,
+            createTime: PropTypes.number,
+            updateTime: PropTypes.number,
+            fileExtName: PropTypes.string,
+            fileSize: PropTypes.number,
+            fileType: PropTypes.number
+        })
+    ).isRequired,
+    fileList: PropTypes.arrayOf(
+        PropTypes.shape({
+            isDir: PropTypes.number,
+            fileName: PropTypes.string,
+            filePath: PropTypes.string,
+            userId: PropTypes.number,
+            parentId: PropTypes.number,
+            key: PropTypes.string,
+            createTime: PropTypes.number,
+            updateTime: PropTypes.number,
+            fileExtName: PropTypes.string,
+            fileSize: PropTypes.number,
+            fileType: PropTypes.number
+        })
+    ).isRequired,
+    onFileClick: PropTypes.func,
+    onFileDoubleClick: PropTypes.func
 }
 
 export default FileList
