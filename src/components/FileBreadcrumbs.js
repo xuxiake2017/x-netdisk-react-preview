@@ -1,5 +1,5 @@
 import React from "react";
-import {Breadcrumbs, Button, makeStyles} from "@material-ui/core";
+import {Breadcrumbs, Button, makeStyles, Fade} from "@material-ui/core";
 import PropTypes from "prop-types";
 
 const useStyles = makeStyles((theme) => ({
@@ -16,9 +16,11 @@ const FileBreadcrumbs = (props) => {
         <React.Fragment>
             <Breadcrumbs aria-label="breadcrumb" separator={'/'}>
                 {props.pathStore.map((item, index) => (
-                    <Button key={item.parentId} classes={{root: classes.breadcrumbsButton}} onClick={() => {
-                        handleClick(item.parentId, index)
-                    }}>{item.fileRealName}</Button>
+                    <Fade key={item.parentId} in={Boolean(item)}>
+                        <Button key={item.parentId} classes={{root: classes.breadcrumbsButton}} onClick={() => {
+                            handleClick(item.parentId, index)
+                        }}>{item.fileRealName}</Button>
+                    </Fade>
                 ))}
             </Breadcrumbs>
         </React.Fragment>

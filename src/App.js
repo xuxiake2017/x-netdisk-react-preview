@@ -31,7 +31,7 @@ export default function App(props) {
             setClientHeightHandler(clientHeight)
             setClientWidthHandler(clientWidth)
         })
-    })
+    }, [])
 
     const setClientHeightHandler = (clientHeight) => {
         dispatch(setClientHeight(clientHeight))
