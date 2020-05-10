@@ -27,7 +27,6 @@ service.interceptors.request.use(
     },
     error => {
         // Do something with request error
-        console.log(error) // for debug
         Promise.reject(error)
     }
 )
@@ -59,6 +58,11 @@ service.interceptors.response.use(
     },
     error => {
         console.log('err' + error) // for debug
+        store.dispatch(openNotification({
+            autoHideDuration: 3000,
+            severity: 'error',
+            message: error
+        }))
         return Promise.reject(error)
     }
 )

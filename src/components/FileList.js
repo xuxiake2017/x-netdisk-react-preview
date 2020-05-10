@@ -89,7 +89,9 @@ FileList.propTypes = {
             updateTime: PropTypes.number,
             fileExtName: PropTypes.string,
             fileSize: PropTypes.number,
-            fileType: PropTypes.number
+            fileType: PropTypes.number,
+            thumbnailUrl: PropTypes.string,
+            musicPoster: PropTypes.string
         })
     ).isRequired,
     fileList: PropTypes.arrayOf(
@@ -104,7 +106,9 @@ FileList.propTypes = {
             updateTime: PropTypes.number,
             fileExtName: PropTypes.string,
             fileSize: PropTypes.number,
-            fileType: PropTypes.number
+            fileType: PropTypes.number,
+            thumbnailUrl: PropTypes.string,
+            musicPoster: PropTypes.string
         })
     ).isRequired,
     onFileClick: PropTypes.func,

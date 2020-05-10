@@ -138,33 +138,37 @@ const FileIcon = (props) => {
                 {props.file.isDir === 1 && (
                     <React.Fragment>
                         {/*文件有预览图显示图片*/}
-                        {/*<div className={classes.preview}>*/}
-                        {/*    /!*图片懒加载*!/*/}
-                        {/*    <LazyLoadImage*/}
-                        {/*        className={classNames(classes.picPreview)}*/}
-                        {/*        src={'http://www.xikcloud.com:8181/group1/M00/00/00/wKgACl6g---AQoNNAAEaheNx18A470.jpg'}*/}
-                        {/*        afterLoad={() => {}}*/}
-                        {/*        beforeLoad={() => {}}*/}
-                        {/*        onError={() => {}}*/}
-                        {/*    />*/}
-                        {/*    /!*加载占位组件*!/*/}
-                        {/*    <ContentLoader*/}
-                        {/*        height={150}*/}
-                        {/*        width={170}*/}
-                        {/*        className={classNames(classes.loadingAnimation)}*/}
-                        {/*    >*/}
-                        {/*        <rect*/}
-                        {/*            x="0"*/}
-                        {/*            y="0"*/}
-                        {/*            width="100%"*/}
-                        {/*            height="150"*/}
-                        {/*        />*/}
-                        {/*    </ContentLoader>*/}
-                        {/*</div>*/}
+                        {(props.file.thumbnailUrl || props.file.musicPoster) && (
+                            <div className={classes.preview}>
+                                {/*图片懒加载*/}
+                                <LazyLoadImage
+                                    className={classNames(classes.picPreview)}
+                                    src={props.file.thumbnailUrl || props.file.musicPoster}
+                                    afterLoad={() => {}}
+                                    beforeLoad={() => {}}
+                                    onError={() => {}}
+                                />
+                                {/*加载占位组件*/}
+                                <ContentLoader
+                                    height={150}
+                                    width={170}
+                                    className={classNames(classes.loadingAnimation)}
+                                >
+                                    <rect
+                                        x="0"
+                                        y="0"
+                                        width="100%"
+                                        height="150"
+                                    />
+                                </ContentLoader>
+                            </div>
+                        )}
                         {/*文件没有预览图显示图标*/}
-                        <div className={classes.previewIcon}>
-                            <MySvgIcon name={fileIcoFilter(props.file.fileType)} className={classes.iconBig}/>
-                        </div>
+                        {(!props.file.thumbnailUrl && !props.file.musicPoster) && (
+                            <div className={classes.previewIcon}>
+                                <MySvgIcon name={fileIcoFilter(props.file.fileType)} className={classes.iconBig}/>
+                            </div>
+                        )}
                         <Divider />
                     </React.Fragment>
                 )}
@@ -206,7 +210,9 @@ FileIcon.propTypes = {
         updateTime: PropTypes.number,
         fileExtName: PropTypes.string,
         fileSize: PropTypes.number,
-        fileType: PropTypes.number
+        fileType: PropTypes.number,
+        thumbnailUrl: PropTypes.string,
+        musicPoster: PropTypes.string
     }).isRequired,
     onClick: PropTypes.func,
     onDoubleClick: PropTypes.func
