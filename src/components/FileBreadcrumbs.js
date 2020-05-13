@@ -17,7 +17,7 @@ const FileBreadcrumbs = (props) => {
             <Breadcrumbs aria-label="breadcrumb" separator={'/'}>
                 {props.pathStore.map((item, index) => (
                     <Fade key={item.parentId} in={Boolean(item)}>
-                        <Button key={item.parentId} classes={{root: classes.breadcrumbsButton}} onClick={() => {
+                        <Button classes={{root: classes.breadcrumbsButton}} onClick={() => {
                             handleClick(item.parentId, index)
                         }}>{item.fileRealName}</Button>
                     </Fade>

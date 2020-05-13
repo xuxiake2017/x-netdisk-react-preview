@@ -55,6 +55,17 @@ const AppInfo = (state= {
                 }
             }
         }
+        case 'openWarningNotification': {
+            return {
+                ...state,
+                notification: {
+                    ...state.notification,
+                    open: true,
+                    severity: 'warning',
+                    message: action.message
+                }
+            }
+        }
         case 'OPEN_SUCCESS_NOTIFICATION': {
             return {
                 ...state,

@@ -40,6 +40,13 @@ export const openNotification = notification => {
     };
 };
 
+export const openWarningNotification = message => {
+    return {
+        type: "OPEN_WARNING_NOTIFICATION",
+        message
+    };
+};
+
 export const openSuccessNotification = message => {
     return {
         type: "OPEN_SUCCESS_NOTIFICATION",
@@ -64,6 +71,26 @@ export const setUserInfo = (userInfo) => {
     return {
         type: "SET_USER_INFO",
         userInfo
+    };
+};
+
+export const storeFile = (file) => {
+    return {
+        type: "STORE_FILE",
+        file
+    };
+};
+
+export const delFile = (uid) => {
+    return {
+        type: "DEL_FILE",
+        uid
+    };
+};
+
+export const clearFile = () => {
+    return {
+        type: "CLEAR_FILE"
     };
 };
 
