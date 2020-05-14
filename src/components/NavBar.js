@@ -444,7 +444,11 @@ export default function PersistentDrawerLeft(props) {
                     </div>
                 )
                 }
-                <ShowStorage/>
+                {
+                    location.pathname === '/home' && (
+                        <ShowStorage/>
+                    )
+                }
 
             </Drawer>
             <main
