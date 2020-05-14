@@ -3,6 +3,7 @@ import {Grid, Typography} from "@material-ui/core";
 import FileIcon from "./FileIcon";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
+import Loading from "./Loading";
 
 const useStyles = makeStyles((theme) => ({
     typeHeader: {
@@ -22,7 +23,12 @@ const FileList = (props) => {
     }
     return (
         <React.Fragment>
-            {props.dirList.length > 0 && (
+            {
+                props.loading && (
+                    <Loading type={"DualRing"} size={50} />
+                )
+            }
+            {props.dirList.length > 0 && !props.loading && (
                 <div>
                     <Typography
                         variant="body2"
@@ -47,7 +53,7 @@ const FileList = (props) => {
                     </Grid>
                 </div>
             )}
-            {props.fileList.length > 0 && (
+            {props.fileList.length > 0 && !props.loading && (
                 <div>
                     <Typography
                         variant="body2"
@@ -112,7 +118,8 @@ FileList.propTypes = {
         })
     ).isRequired,
     onFileClick: PropTypes.func,
-    onFileDoubleClick: PropTypes.func
+    onFileDoubleClick: PropTypes.func,
+    loading: PropTypes.bool
 }
 
 export default FileList

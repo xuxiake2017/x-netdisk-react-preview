@@ -18,7 +18,7 @@ const FILE_TYPE = {
     'USER_STATUS_NOT_VERIFY': 9
 }
 
-const fileIcoFilter = (fileType) => {
+export function fileIcoFilter(fileType) {
     switch (fileType) {
         case FILE_TYPE.FILE_TYPE_OF_TXT :
             return '#icon-file_txt'
@@ -47,4 +47,18 @@ const fileIcoFilter = (fileType) => {
     }
 }
 
-export default fileIcoFilter
+export function formatFileSize(fileSize) {
+    if (fileSize) {
+        if (fileSize > 1024 * 1024) {
+            fileSize = fileSize / (1024 * 1024);
+            return fileSize.toFixed(2) + 'M';
+        } else {
+            fileSize = fileSize / 1024;
+            return fileSize.toFixed(2) + 'KB';
+        }
+    } else {
+        return '--';
+    }
+}
+
+export default FILE_TYPE

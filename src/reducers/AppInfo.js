@@ -1,5 +1,5 @@
 const AppInfo = (state= {
-    open: false,
+    open: true,
     clientHeight: null,
     clientWidth: null,
     palette: {
@@ -55,7 +55,7 @@ const AppInfo = (state= {
                 }
             }
         }
-        case 'openWarningNotification': {
+        case 'OPEN_WARNING_NOTIFICATION': {
             return {
                 ...state,
                 notification: {

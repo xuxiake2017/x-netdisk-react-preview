@@ -191,16 +191,6 @@ class UploadContainer extends React.Component {
                 this.uploadInnerRef.current.upload(file.raw);
             });
     }
-    getMigratingConfig() {
-        return {
-            props: {
-                'default-file-list': 'default-file-list is renamed to file-list.',
-                'show-upload-list': 'show-upload-list is renamed to show-file-list.',
-                'thumbnail-mode': 'thumbnail-mode has been deprecated, you can implement the same effect according to this case: http://element.eleme.io/#/zh-CN/component/upload#yong-hu-tou-xiang-shang-chuan'
-            }
-        };
-    }
-
 
     render() {
 

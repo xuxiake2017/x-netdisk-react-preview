@@ -1,6 +1,4 @@
 import SparkMD5 from 'spark-md5'
-import store from '../store/store'
-import { openWarningNotification } from "../actions";
 
 /**
  * 计算文件md5值
@@ -16,10 +14,6 @@ export default function GetFileMD5 (file, uid, call) {
   let fileSize = file.size;
   let fileRealName = file.name;
   let lastModifiedDate = file.lastModifiedDate.getTime();
-  if (fileSize > 1024 * 1024 * 2) {
-    store.dispatch(openWarningNotification('文件过大，请重新选择'))
-    return;
-  }
   let chunkSize = 2097152;
   // read in chunks of 2MB
   let chunks = Math.ceil(file.size / chunkSize);

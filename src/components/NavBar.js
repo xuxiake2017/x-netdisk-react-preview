@@ -48,6 +48,7 @@ import {
 import { Logout } from '../api/user'
 import { removeToken } from "../utils/auth";
 import ConfirmDialog from "./ConfirmDialog";
+import ShowStorage from "./ShowStorage";
 
 const drawerWidth = 240;
 
@@ -81,9 +82,11 @@ const useStyles = makeStyles((theme) => ({
     drawer: {
         width: drawerWidth,
         flexShrink: 0,
+        position: "relative",
     },
     drawerPaper: {
         width: drawerWidth,
+        overflow: "hidden"
     },
     drawerHeader: {
         ...theme.mixins.toolbar,
@@ -441,6 +444,7 @@ export default function PersistentDrawerLeft(props) {
                     </div>
                 )
                 }
+                <ShowStorage/>
 
             </Drawer>
             <main

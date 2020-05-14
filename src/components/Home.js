@@ -5,15 +5,18 @@ import {
 } from "@material-ui/core";
 import FileList from "./FileList";
 import {useDispatch, useSelector} from "react-redux";
-import {GetFileList, UploadMD5} from "../api/file";
+import {GetFileList, GetFileMediaInfo, UploadMD5} from "../api/file";
 import FileBreadcrumbs from "./FileBreadcrumbs";
 import Upload from "./upload";
 import AppConf from "../conf/AppConf";
 import GetFileMD5 from "../utils/getFileMD5";
 import ContextMenu from "./ContextMenu";
-import {delFile, openWarningNotification, openSuccessNotification, storeFile, setUserInfo} from "../actions";
+import {
+    delFile, openWarningNotification, openSuccessNotification, storeFile, setUserInfo, openImagePreviewPopover
+} from "../actions";
 import { CheckMd5 } from "../api/file";
-import {GetInfo} from "../api/user";
+import { GetInfo } from "../api/user";
+import FILE_TYPE from "../utils/FileUtils";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -29,7 +32,12 @@ const useStyles = makeStyles((theme) => ({
         fontSize: '1rem'
     },
     fileList: {
-        padding: 10
+        padding: 10,
+        height: 'calc(100% - 112px)',
+        overflowY: "auto"
+    },
+    uploadComponent: {
+        display: "none"
     }
 }))
 
@@ -69,12 +77,17 @@ const Home = () => {
         return filesInStore.find(file => file.uid === uid)
     }
 
+    // 加载状态标记
+    const [loading, setLoading] = React.useState(false)
+
     const uploadAction = `${AppConf.baseUrl()}/file/fileUpload`
     useEffect(() => {
         getFileList()
     }, [])
     const getFileList = (params) => {
+        setLoading(true)
         GetFileList(params).then(res => {
+            setLoading(false)
             const data = res.data.pageInfo.list
             const fileList_ = []
             const dirList_ = []
@@ -103,6 +116,14 @@ const Home = () => {
             getFileList(params)
             const pathStore_ = [...pathStore, {parentId: file.id, fileRealName: file.fileName}]
             setPathStore(pathStore_)
+        }
+        if (file.fileType === FILE_TYPE.FILE_TYPE_OF_PIC) {
+            dispatch(openImagePreviewPopover([
+                {
+                    src: file.thumbnailUrl,
+                    intro: file.fileName
+                }
+            ]))
         }
     }
     // 储存文件树路径
@@ -136,6 +157,11 @@ const Home = () => {
     const changeHandle = (file, fileList) => {
         console.log(file)
         if (file.status === 'ready') {
+
+            if (file.size > 1024 * 1024 * 100) {
+                dispatch(openWarningNotification('文件过大，请重新选择'))
+                return;
+            }
             GetFileMD5(file.raw, file.uid, (fileInfo) => {
                 let isExist = false;
                 console.log(fileInfo)
@@ -235,6 +261,20 @@ const Home = () => {
     return (
         <div className={classes.root}>
             <Navbar>
+                <Upload
+                    className={classes.uploadComponent}
+                    data={uploadData}
+                    withCredentials={true}
+                    action={uploadAction}
+                    onChange={changeHandle}
+                    onSuccess={handleUploadSuccess}
+                    autoUpload={false}
+                    ref={uploadRef}
+                    showFileList={false}
+                    beforeUpload={beforeUpload}
+                    beforeRemove={beforeRemove}
+                    fileList={uploadFileList}
+                />
                 <div className={classes.breadcrumb}>
                     <FileBreadcrumbs pathStore={pathStore} onClick={jump}/>
                 </div>
@@ -247,26 +287,11 @@ const Home = () => {
                         mouseY={contextMenuPosition.mouseY}
                         onUpload={selectFile}
                     />
-                    <FileList dirList={dirList} fileList={fileList} onFileClick={file => {
+                    <FileList dirList={dirList} fileList={fileList} loading={loading} onFileClick={file => {
                         handleFileClick(file)
                     }} onFileDoubleClick={file => {
                         handleFileDoubleClick(file)
                     }}/>
-                </div>
-                <div>
-                    <Upload
-                        data={uploadData}
-                        withCredentials={true}
-                        className={classes.uploadTest}
-                        action={uploadAction}
-                        onChange={changeHandle}
-                        onSuccess={handleUploadSuccess}
-                        autoUpload={false}
-                        ref={uploadRef}
-                        showFileList={false}
-                        beforeUpload={beforeUpload}
-                        fileList={uploadFileList}
-                    />
                 </div>
             </Navbar>
         </div>

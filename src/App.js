@@ -13,6 +13,7 @@ import { useHistory } from "react-router-dom";
 import Notification from "./components/Notification";
 import AuthRoute from "./components/AuthRoute";
 import Register from "./components/Register";
+import ImageView from "./components/ImageView";
 
 export default function App(props) {
 
@@ -56,6 +57,7 @@ export default function App(props) {
                 <GlobalStyle/>
                 <CssBaseline/>
                 <Notification/>
+                <ImageView/>
                 <div>
                     <Switch>
                         <AuthRoute exact path="/">

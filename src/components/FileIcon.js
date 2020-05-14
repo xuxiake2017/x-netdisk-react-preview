@@ -9,7 +9,7 @@ import React from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import ContentLoader from 'react-content-loader'
 import PropTypes from 'prop-types'
-import fileIcoFilter from "../utils/FileUtils";
+import { fileIcoFilter } from "../utils/FileUtils";
 
 const useStyles = makeStyles((theme) => ({
         container: {

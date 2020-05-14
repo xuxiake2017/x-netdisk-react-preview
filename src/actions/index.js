@@ -94,5 +94,18 @@ export const clearFile = () => {
     };
 };
 
+export const openImagePreviewPopover = (images) => {
+    return {
+        type: "OPEN_IMAGE_PREVIEW_POPOVER",
+        images
+    };
+};
+
+export const closeImagePreviewPopover = () => {
+    return {
+        type: "CLOSE_IMAGE_PREVIEW_POPOVER"
+    };
+};
+
 
 
