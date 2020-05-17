@@ -58,8 +58,9 @@ const useStyles = makeStyles((theme) => ({
         width: '100%'
     },
     appBar: {
-        zIndex: theme.zIndex.drawer + 1,
-        transition: 'background-color .4s'
+        zIndex: theme.zIndex.drawer + 2,
+        transition: 'background-color .4s',
+        background: 'linear-gradient(45deg, #7A88FF, #ffd586)'
     },
     menuButton: {
         marginRight: theme.spacing(2),
@@ -99,7 +100,8 @@ const useStyles = makeStyles((theme) => ({
             duration: theme.transitions.duration.leavingScreen,
         }),
         marginLeft: -drawerWidth,
-        overflow: "hidden"
+        overflow: "hidden",
+        zIndex: theme.zIndex.drawer + 1,
     },
     contentProps: props => ({
         height: `${props.clientHeight}px`
@@ -109,6 +111,10 @@ const useStyles = makeStyles((theme) => ({
     },
     nested: {
         paddingLeft: theme.spacing(4),
+    },
+    menuListContainer: {
+        height: 'calc(100% - 165px)',
+        overflow: 'auto'
     },
     menuList: {
         padding: 0
@@ -134,17 +140,18 @@ export default function PersistentDrawerLeft(props) {
     const history = useHistory()
     const location = useLocation()
 
-    let open = useSelector(state => {
-        return state.appInfo.open
+    let drawerOpen = useSelector(state => {
+        return state.appInfo.drawerOpen
     })
     const dispatch =  useDispatch()
 
     const toggleDrawerOpen = useCallback(
-        (open) =>
-            dispatch(drawerToggleAction(open)),
+        (drawerOpen) =>
+            dispatch(drawerToggleAction(drawerOpen)),
         [dispatch]
     );
     const toggleCollapseOpen = () => {
+        history.push('/home')
         setCollapseOpen(!collapseOpen)
     }
 
@@ -272,7 +279,7 @@ export default function PersistentDrawerLeft(props) {
                         color="inherit"
                         aria-label="open drawer"
                         onClick={() => {
-                            toggleDrawerOpen(!open)
+                            toggleDrawerOpen(!drawerOpen)
                         }}
                         edge="start"
                         className={clsx(classes.menuButton)}
@@ -287,13 +294,13 @@ export default function PersistentDrawerLeft(props) {
                         {themeType === 'dark' ? (
                             <Tooltip title="切换日间模式">
                                 <IconButton color="inherit" onClick={settingThemeType}>
-                                    <DarkThemeTypeIcon/>
+                                    <LightThemeTypeIcon/>
                                 </IconButton>
                             </Tooltip>
                         ) : (
                             <Tooltip title="切换夜间模式">
                                 <IconButton color="inherit" onClick={settingThemeType}>
-                                    <LightThemeTypeIcon/>
+                                    <DarkThemeTypeIcon/>
                                 </IconButton>
                             </Tooltip>
                         )}
@@ -337,7 +344,7 @@ export default function PersistentDrawerLeft(props) {
                 className={classes.drawer}
                 variant="persistent"
                 anchor="left"
-                open={open}
+                open={drawerOpen}
                 classes={{
                     paper: classes.drawerPaper,
                 }}
@@ -345,8 +352,8 @@ export default function PersistentDrawerLeft(props) {
                 <div className={classes.drawerHeader}>
                 </div>
                 <Divider />
-                {location.pathname !== '/home' && (
-                    <div>
+                <div className={classes.menuListContainer}>
+                    {!userInfo && (
                         <List>
                             <ListItem
                                 button
@@ -369,11 +376,9 @@ export default function PersistentDrawerLeft(props) {
                                 <ListItemText primary="注册" />
                             </ListItem>
                         </List>
-                    </div>
-                )
-                }
-                {location.pathname === '/home' && (
-                    <div>
+                    )
+                    }
+                    {userInfo && (
                         <List className={classes.menuList}>
                             <ListItem
                                 button
@@ -441,11 +446,11 @@ export default function PersistentDrawerLeft(props) {
                                 <ListItemText primary="个人信息" />
                             </ListItem>
                         </List>
-                    </div>
-                )
-                }
+                    )
+                    }
+                </div>
                 {
-                    location.pathname === '/home' && (
+                    userInfo && (
                         <ShowStorage/>
                     )
                 }
@@ -453,7 +458,7 @@ export default function PersistentDrawerLeft(props) {
             </Drawer>
             <main
                 className={clsx(classes.content, classes.contentProps, {
-                    [classes.contentShift]: open,
+                    [classes.contentShift]: drawerOpen,
                 })}
             >
                 <div className={classes.drawerHeader} />

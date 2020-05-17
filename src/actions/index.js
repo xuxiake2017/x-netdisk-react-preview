@@ -1,7 +1,7 @@
-export const drawerToggleAction = open => {
+export const drawerToggleAction = drawerOpen => {
     return {
         type: "DRAWER_TOGGLE",
-        open
+        drawerOpen
     };
 };
 
@@ -104,6 +104,13 @@ export const openImagePreviewPopover = (images) => {
 export const closeImagePreviewPopover = () => {
     return {
         type: "CLOSE_IMAGE_PREVIEW_POPOVER"
+    };
+};
+
+export const setViewMode = (viewMode) => {
+    return {
+        type: "SET_VIEW_MODE",
+        viewMode
     };
 };
 

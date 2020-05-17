@@ -14,7 +14,7 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import {Visibility, VisibilityOff} from "@material-ui/icons";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useDispatch } from "react-redux";
-import { openSuccessNotification, setUserInfo } from "../actions";
+import { openSuccessNotification, setUserInfo, drawerToggleAction } from "../actions";
 import { setToken } from "../utils/auth";
 
 const useStyles = makeStyles(theme => (
@@ -96,6 +96,10 @@ const LoginForm = () => {
     });
     const [captchaSrc, setCaptchaSrc] = React.useState(`${AppConf.baseUrl()}/user/createImg?${new Date().getTime()}`);
     const [showPassword, setShowPassword] = React.useState(false);
+    React.useEffect(() => {
+        dispatch(drawerToggleAction(false))
+    }, [])
+
     const changeHandler = (event) => {
         const textFieldName = event.target.name
         setLoginData({

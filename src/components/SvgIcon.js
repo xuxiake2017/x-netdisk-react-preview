@@ -1,10 +1,20 @@
 import PropTypes from 'prop-types'
 import {Box} from "@material-ui/core";
 import React from "react";
-const MySvgIcon = (props) => {
+import { makeStyles } from "@material-ui/core/styles";
 
+const useStyles = makeStyles({
+    container: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+    }
+})
+
+const MySvgIcon = (props) => {
+    const classes = useStyles()
     return (
-        <Box>
+        <Box className={classes.container}>
             <svg className={`icon ${props.className}`} aria-hidden="true" style={{width: props.width, height: props.height}}>
                 <use xlinkHref={`${props.name}`}></use>
             </svg>

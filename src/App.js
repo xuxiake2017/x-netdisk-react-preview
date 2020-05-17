@@ -14,6 +14,7 @@ import Notification from "./components/Notification";
 import AuthRoute from "./components/AuthRoute";
 import Register from "./components/Register";
 import ImageView from "./components/ImageView";
+import MediaPreview from "./components/MediaPreview";
 
 export default function App(props) {
 
@@ -71,6 +72,9 @@ export default function App(props) {
                         </AuthRoute>
                         <AuthRoute path="/register">
                             <Register/>
+                        </AuthRoute>
+                        <AuthRoute path="/mediaPreview/:fileKey">
+                            <MediaPreview/>
                         </AuthRoute>
                     </Switch>
                 </div>

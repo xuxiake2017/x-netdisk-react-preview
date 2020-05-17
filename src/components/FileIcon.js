@@ -10,6 +10,7 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import ContentLoader from 'react-content-loader'
 import PropTypes from 'prop-types'
 import { fileIcoFilter } from "../utils/FileUtils";
+import {useSelector} from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
         container: {
@@ -121,6 +122,9 @@ const FileIcon = (props) => {
     const handleDoubleClick = (e) => {
         props.onDoubleClick()
     }
+    const viewMode = useSelector(({ fileExplorer }) => {
+        return fileExplorer.viewMode
+    })
     return (
         <div className={classes.container}>
             <ButtonBase
@@ -135,7 +139,7 @@ const FileIcon = (props) => {
                 onClick={handleClick}
                 onDoubleClick={handleDoubleClick}
             >
-                {props.file.isDir === 1 && (
+                {props.file.isDir === 1 && viewMode === 'GRID_OF_PREVIEW' && (
                     <React.Fragment>
                         {/*文件有预览图显示图片*/}
                         {(props.file.thumbnailUrl || props.file.musicPoster) && (

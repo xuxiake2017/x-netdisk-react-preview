@@ -12,11 +12,19 @@ import AppConf from "../conf/AppConf";
 import GetFileMD5 from "../utils/getFileMD5";
 import ContextMenu from "./ContextMenu";
 import {
-    delFile, openWarningNotification, openSuccessNotification, storeFile, setUserInfo, openImagePreviewPopover
+    delFile,
+    openWarningNotification,
+    openSuccessNotification,
+    storeFile,
+    setUserInfo,
+    openImagePreviewPopover,
+    drawerToggleAction, openErrNotification
 } from "../actions";
 import { CheckMd5 } from "../api/file";
 import { GetInfo } from "../api/user";
 import FILE_TYPE from "../utils/FileUtils";
+import { useHistory } from "react-router";
+import { Scrollbars } from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -27,6 +35,7 @@ const useStyles = makeStyles((theme) => ({
         height: '48px',
         padding: '8px 16px',
         alignItems: 'center',
+        position: "relative",
     },
     breadcrumbsButton: {
         fontSize: '1rem'
@@ -44,6 +53,7 @@ const useStyles = makeStyles((theme) => ({
 const Home = () => {
     const classes = useStyles()
     const dispatch = useDispatch()
+    const history = useHistory()
     const [fileList, setFileList] = React.useState([])
     const [dirList, setDirList] = React.useState([])
     // 查询过滤条件
@@ -54,7 +64,8 @@ const Home = () => {
     // 分页参数
     const [pagination, setPagination] = React.useState({
         total: 0,
-        pageNum: 0,
+        pages: 0,
+        pageNum: 1,
         pageSize: 20
     })
     // 文件上传
@@ -79,15 +90,49 @@ const Home = () => {
 
     // 加载状态标记
     const [loading, setLoading] = React.useState(false)
+    const [finished, setFinised] = React.useState(false)
+
+    // 重载标记
+    let reloadFlag = false
 
     const uploadAction = `${AppConf.baseUrl()}/file/fileUpload`
     useEffect(() => {
-        getFileList()
+        const params = {
+            ...pagination,
+            ...filters
+        }
+        getFileList(params)
+        dispatch(drawerToggleAction(true))
     }, [])
-    const getFileList = (params) => {
+    // 数据重新加载
+    const reLoad = (filters_) => {
         setLoading(true)
+        const pagination_ = {
+            ...pagination,
+            pageNum: 1
+        }
+        setPagination(pagination_)
+        reloadFlag = true;
+        getFileList({
+            ...filters_,
+            ...pagination_
+        })
+    }
+    // 获取文件
+    const getFileList = (params) => {
+        // setLoading(true)
+        setFinised(false)
         GetFileList(params).then(res => {
             setLoading(false)
+            const pagination_ = {}
+            pagination_.total = res.data.pageInfo.total
+            pagination_.pageNum = res.data.pageInfo.pageNum
+            pagination_.pageSize = res.data.pageInfo.pageSize
+            pagination_.pages = res.data.pageInfo.pages
+            if (pagination_.pageNum * pagination_.pageSize > res.data.pageInfo.list.length) {
+                setFinised(true)
+            }
+            setPagination(pagination_)
             const data = res.data.pageInfo.list
             const fileList_ = []
             const dirList_ = []
@@ -98,8 +143,24 @@ const Home = () => {
                     fileList_.push(item)
                 }
             })
-            setDirList(dirList_)
-            setFileList(fileList_)
+            if (reloadFlag) {
+                setDirList([
+                    ...dirList_
+                ])
+                setFileList([
+                    ...fileList_
+                ])
+            } else {
+                setDirList([
+                    ...dirList,
+                    ...dirList_
+                ])
+                setFileList([
+                    ...fileList,
+                    ...fileList_
+                ])
+            }
+            reloadFlag = false;
         })
     }
     // 文件单击
@@ -110,10 +171,13 @@ const Home = () => {
     const handleFileDoubleClick = (file) => {
         // console.log('handleFileDoubleClick', file)
         if (file.isDir === 0) {
-            const params = {
+            const filters_ = {
+                ...filters,
                 parentId: file.id
             }
-            getFileList(params)
+            setFilters(filters_)
+            setLoading(true)
+            reLoad(filters_)
             const pathStore_ = [...pathStore, {parentId: file.id, fileRealName: file.fileName}]
             setPathStore(pathStore_)
         }
@@ -125,6 +189,10 @@ const Home = () => {
                 }
             ]))
         }
+        if (file.fileType === FILE_TYPE.FILE_TYPE_OF_VIDEO) {
+            history.push('/mediaPreview/1')
+            console.log(history)
+        }
     }
     // 储存文件树路径
     const [pathStore, setPathStore] = React.useState([
@@ -132,7 +200,6 @@ const Home = () => {
     ])
     // 路径跳转
     const jump = (parentId, index) => {
-        // console.log(parentId, index)
         if ((pathStore.length === 1) || (pathStore.length > 1 && index + 1 === pathStore.length)) {
             return
         }
@@ -140,20 +207,26 @@ const Home = () => {
         Object.assign(pathStore_, pathStore)
         pathStore_.splice(index + 1, pathStore_.length - 1)
         setPathStore(pathStore_)
-        const params = {
+        const filters_ = {
+            ...filters,
             parentId
         }
-        getFileList(params)
+        setFilters(filters_)
+        setLoading(true)
+        reLoad(filters_)
     }
     const uploadRef = React.useRef(null)
+    // 选择文件上传
     const selectFile = () => {
         uploadRef.current.uploadInnerRef.current.handleClick()
         setContextMenuOpen(false)
     }
+    // 开始上传
     const startUpload = () => {
 
         uploadRef.current.submit()
     }
+    // 选择上传文件后
     const changeHandle = (file, fileList) => {
         console.log(file)
         if (file.status === 'ready') {
@@ -184,11 +257,16 @@ const Home = () => {
     }
     // 上传成功回调
     const handleUploadSuccess = (res, file) => {
-        dispatch(openSuccessNotification(`${file.name}上传成功！`))
-        getFileList(filters)
-        GetInfo().then(res => {
-            dispatch(setUserInfo(res.data))
-        })
+        if (res.code !== 2000) {
+            dispatch(openErrNotification(res.msg))
+        } else {
+            dispatch(openSuccessNotification(`${file.name}上传成功！`))
+            reLoad(filters)
+            GetInfo().then(res => {
+                dispatch(setUserInfo(res.data))
+            })
+        }
+
     }
     // 鼠标右键点击
     const handleContextMenu = (e) => {
@@ -248,7 +326,7 @@ const Home = () => {
                 const uploadFileList_ = Object.assign([], uploadFileList)
                 uploadFileList_.push({ name: file.name, url: '' })
                 setUploadFileList(uploadFileList_)
-                getFileList(filters)
+                reLoad(filters)
             }).catch(res => {
             })
             throw new Error('服务器已经存在该文件');
@@ -257,6 +335,74 @@ const Home = () => {
             // 服务器不存在该文件，需要上传
             return true
         }
+    }
+    // 分页页码改变
+    const handleChangePage = (event, newPage) => {
+        if (newPage === pagination.pageNum) {
+            return
+        }
+        const pagination_ = {
+            ...pagination,
+            pageNum: newPage
+        }
+        setLoading(true)
+        getFileList({
+            ...pagination_,
+            ...filters
+        })
+        setPagination(pagination_)
+    }
+    // 分页大小改变
+    const handleChangeRowsPerPage = (event) => {
+        const pagination_ = {
+            ...pagination,
+            pageNum: 1,
+            pageSize: +event.target.value
+        }
+        setLoading(true)
+        getFileList({
+            ...pagination_,
+            ...filters
+        })
+        setPagination(pagination_)
+    }
+    // 滚动事件处理（滚动加载）
+    const handleScrollFrame = ({ clientHeight,
+                                   clientWidth,
+                                   left,
+                                   scrollHeight,
+                                   scrollLeft,
+                                   scrollTop,
+                                   scrollWidth,
+                                   top }) => {
+        if (scrollHeight - (scrollTop + clientHeight) < 100) {
+            if (pagination.pageNum * pagination.pageSize > (fileList.length + dirList.length)) {
+                setFinised(true)
+                return;
+            }
+            if (loading) {
+                return
+            }
+            console.log('翻页')
+            const pagination_ = {
+                ...pagination,
+                pageNum: pagination.pageNum + 1
+            }
+            getFileList({
+                ...pagination_,
+                ...filters
+            })
+            setPagination(pagination_)
+        }
+    }
+    const setReload = (flag) => {
+        reloadFlag = flag
+    }
+    const handleReLoad = (nextViewMode) => {
+        if (nextViewMode === 'GRID') {
+            return
+        }
+        reLoad(filters)
     }
     return (
         <div className={classes.root}>
@@ -276,7 +422,7 @@ const Home = () => {
                     fileList={uploadFileList}
                 />
                 <div className={classes.breadcrumb}>
-                    <FileBreadcrumbs pathStore={pathStore} onClick={jump}/>
+                    <FileBreadcrumbs pathStore={pathStore} onClick={jump} onReLoad={handleReLoad}/>
                 </div>
                 <Divider/>
                 <div className={classes.fileList} onContextMenu={handleContextMenu}>
@@ -287,11 +433,22 @@ const Home = () => {
                         mouseY={contextMenuPosition.mouseY}
                         onUpload={selectFile}
                     />
-                    <FileList dirList={dirList} fileList={fileList} loading={loading} onFileClick={file => {
-                        handleFileClick(file)
-                    }} onFileDoubleClick={file => {
-                        handleFileDoubleClick(file)
-                    }}/>
+                    <Scrollbars onScrollFrame={handleScrollFrame} autoHide>
+                        <FileList
+                            dirList={dirList}
+                            fileList={fileList}
+                            loading={loading}
+                            count={pagination.pages}
+                            page={pagination.pageNum}
+                            rowsPerPage={pagination.pageSize}
+                            onChangePage={handleChangePage}
+                            onChangeRowsPerPage={handleChangeRowsPerPage}
+                            onFileClick={file => {
+                                handleFileClick(file)
+                            }} onFileDoubleClick={file => {
+                            handleFileDoubleClick(file)
+                        }} setReload={setReload} finised={finished}/>
+                    </Scrollbars>
                 </div>
             </Navbar>
         </div>

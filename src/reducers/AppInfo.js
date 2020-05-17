@@ -1,5 +1,5 @@
 const AppInfo = (state= {
-    open: true,
+    drawerOpen: true,
     clientHeight: null,
     clientWidth: null,
     palette: {
@@ -16,7 +16,7 @@ const AppInfo = (state= {
         case 'DRAWER_TOGGLE': {
             return {
                 ...state,
-                open: action.open
+                drawerOpen: action.drawerOpen
             }
         }
         case 'SET_CLIENT_HEIGHT': {
