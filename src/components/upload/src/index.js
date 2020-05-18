@@ -184,12 +184,21 @@ class UploadContainer extends React.Component {
             uploadFiles: []
         })
     }
-    submit() {
-        this.state.uploadFiles
-            .filter(file => file.status === 'ready')
-            .forEach(file => {
-                this.uploadInnerRef.current.upload(file.raw);
-            });
+    submit(uid) {
+        if (uid) {
+            this.state.uploadFiles
+                .filter(file => file.status === 'ready' && file.uid === uid)
+                .forEach(file => {
+                    this.uploadInnerRef.current.upload(file.raw);
+                });
+        } else {
+            this.state.uploadFiles
+                .filter(file => file.status === 'ready')
+                .forEach(file => {
+                    this.uploadInnerRef.current.upload(file.raw);
+                });
+        }
+
     }
 
     render() {

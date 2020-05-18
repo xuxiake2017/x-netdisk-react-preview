@@ -5,7 +5,7 @@ import {
 } from "@material-ui/core";
 import FileList from "./FileList";
 import {useDispatch, useSelector} from "react-redux";
-import {GetFileList, GetFileMediaInfo, UploadMD5} from "../api/file";
+import {GetFileList, UploadMD5, CheckMd5, MkDir} from "../api/file";
 import FileBreadcrumbs from "./FileBreadcrumbs";
 import Upload from "./upload";
 import AppConf from "../conf/AppConf";
@@ -20,11 +20,12 @@ import {
     openImagePreviewPopover,
     drawerToggleAction, openErrNotification
 } from "../actions";
-import { CheckMd5 } from "../api/file";
 import { GetInfo } from "../api/user";
 import FILE_TYPE from "../utils/FileUtils";
 import { useHistory } from "react-router";
 import { Scrollbars } from 'react-custom-scrollbars';
+import UploadProgress from "./UploadProgress";
+import TextFieldDialog from "./TextFieldDialog";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -43,7 +44,8 @@ const useStyles = makeStyles((theme) => ({
     fileList: {
         padding: 10,
         height: 'calc(100% - 112px)',
-        overflowY: "auto"
+        overflowY: "auto",
+        position: "relative"
     },
     uploadComponent: {
         display: "none"
@@ -75,7 +77,6 @@ const Home = () => {
         lastModifiedDate: null
     })
 
-    const [uploadFileList, setUploadFileList] = React.useState([])
     const user = useSelector(state => {
         return state.userInfo
     })
@@ -222,13 +223,13 @@ const Home = () => {
         setContextMenuOpen(false)
     }
     // 开始上传
-    const startUpload = () => {
+    const startUpload = (uid) => {
 
-        uploadRef.current.submit()
+        uploadRef.current.submit(uid)
     }
     // 选择上传文件后
     const changeHandle = (file, fileList) => {
-        console.log(file)
+        // console.log(file)
         if (file.status === 'ready') {
 
             if (file.size > 1024 * 1024 * 100) {
@@ -237,7 +238,7 @@ const Home = () => {
             }
             GetFileMD5(file.raw, file.uid, (fileInfo) => {
                 let isExist = false;
-                console.log(fileInfo)
+                // console.log(fileInfo)
                 CheckMd5({ md5Hex: fileInfo.md5Hex }).then(res => {
                     console.log(res)
                     if (res.data === 20034) {
@@ -248,7 +249,7 @@ const Home = () => {
                         isExist = false
                     }
                     dispatch(storeFile({ ...fileInfo, isExist, parentId: filters.parentId }))
-                    startUpload()
+                    startUpload(file.uid)
                 }).catch(res => {
                     console.log(res)
                 })
@@ -257,7 +258,8 @@ const Home = () => {
     }
     // 上传成功回调
     const handleUploadSuccess = (res, file) => {
-        if (res.code !== 2000) {
+        console.log('handleUploadSuccess', file)
+        if (res.code !== 20000) {
             dispatch(openErrNotification(res.msg))
         } else {
             dispatch(openSuccessNotification(`${file.name}上传成功！`))
@@ -265,6 +267,15 @@ const Home = () => {
             GetInfo().then(res => {
                 dispatch(setUserInfo(res.data))
             })
+        }
+        let flag = true
+        uploadFileList.forEach(item => {
+            if (item.percentage !== 100) {
+                flag = false
+            }
+        })
+        if (flag) {
+            setUploadProgressOpen(false)
         }
 
     }
@@ -323,9 +334,15 @@ const Home = () => {
                 GetInfo().then(res => {
                     dispatch(setUserInfo(res.data))
                 })
-                const uploadFileList_ = Object.assign([], uploadFileList)
-                uploadFileList_.push({ name: file.name, url: '' })
-                setUploadFileList(uploadFileList_)
+                let flag = true
+                uploadFileList.forEach(item => {
+                    if (item.percentage !== 100) {
+                        flag = false
+                    }
+                })
+                if (flag) {
+                    setUploadProgressOpen(false)
+                }
                 reLoad(filters)
             }).catch(res => {
             })
@@ -336,6 +353,17 @@ const Home = () => {
             return true
         }
     }
+    const handleProgress = (event, file, fileList) => {
+
+        setUploadProgressOpen(true)
+        const file_ = Object.assign({}, file)
+        file_.percentage = event.percent
+        const fileList_ = Object.assign([], fileList)
+        fileList_.splice(fileList.indexOf(file), 1, file_)
+        setUploadFileList(fileList_)
+    }
+    const [uploadProgressOpen, setUploadProgressOpen] = React.useState(false)
+    const [uploadFileList, setUploadFileList] = React.useState([])
     // 分页页码改变
     const handleChangePage = (event, newPage) => {
         if (newPage === pagination.pageNum) {
@@ -404,8 +432,31 @@ const Home = () => {
         }
         reLoad(filters)
     }
+    const  [mkdirDialogOpen, setMkdirDialogOpen] = React.useState(false)
+    const handleMkdir = () => {
+        setContextMenuOpen(false)
+        setMkdirDialogOpen(true)
+    }
+    const handleMkdirDialogClose = () => {
+        setMkdirDialogOpen(false)
+    }
+    const handleMkdirConfirm = (value) => {
+
+        MkDir({fileName: value, parentId: filters.parentId}).then(res => {
+            dispatch(openSuccessNotification(`文件夹"${value}"新建成功！`))
+            reLoad(filters)
+            setMkdirDialogOpen(false)
+        }).catch(res => {
+        })
+    }
     return (
         <div className={classes.root}>
+            <TextFieldDialog
+                open={mkdirDialogOpen}
+                onClose={handleMkdirDialogClose}
+                onConfirm={handleMkdirConfirm}
+                title={'新建文件夹'}
+                contentText={''}/>
             <Navbar>
                 <Upload
                     className={classes.uploadComponent}
@@ -419,7 +470,8 @@ const Home = () => {
                     showFileList={false}
                     beforeUpload={beforeUpload}
                     beforeRemove={beforeRemove}
-                    fileList={uploadFileList}
+                    onProgress={handleProgress}
+                    multiple={true}
                 />
                 <div className={classes.breadcrumb}>
                     <FileBreadcrumbs pathStore={pathStore} onClick={jump} onReLoad={handleReLoad}/>
@@ -432,6 +484,7 @@ const Home = () => {
                         mouseX={contextMenuPosition.mouseX}
                         mouseY={contextMenuPosition.mouseY}
                         onUpload={selectFile}
+                        onMkdir={handleMkdir}
                     />
                     <Scrollbars onScrollFrame={handleScrollFrame} autoHide>
                         <FileList
@@ -449,6 +502,7 @@ const Home = () => {
                             handleFileDoubleClick(file)
                         }} setReload={setReload} finised={finished}/>
                     </Scrollbars>
+                    <UploadProgress open={uploadProgressOpen} uploadFileList={uploadFileList}/>
                 </div>
             </Navbar>
         </div>

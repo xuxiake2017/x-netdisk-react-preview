@@ -6,8 +6,18 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import Button from "@material-ui/core/Button";
 import DialogActions from "@material-ui/core/DialogActions";
 import PropTypes from 'prop-types'
+import {makeStyles} from "@material-ui/core/styles";
+
+const useStyles = makeStyles(() => (
+    {
+        paper: {
+            width: '30%'
+        }
+    }
+))
 
 const ConfirmDialog = ({ open, onClose, onConfirm, title, contentText }) => {
+    const classes = useStyles()
     return (
         <React.Fragment>
             <Dialog
@@ -15,6 +25,7 @@ const ConfirmDialog = ({ open, onClose, onConfirm, title, contentText }) => {
                 onClose={onClose}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
+                classes={{paper: classes.paper}}
             >
                 <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
                 <DialogContent>

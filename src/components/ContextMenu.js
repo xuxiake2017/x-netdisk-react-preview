@@ -48,7 +48,7 @@ const ContextMenu = (props) => {
                 </ListItemIcon>
                 <ListItemText primary="上传文件" />
             </MenuItem>
-            <MenuItem onClick={props.mkdir}>
+            <MenuItem onClick={props.onMkdir}>
                 <ListItemIcon>
                     <CreateNewFolderIcon />
                 </ListItemIcon>

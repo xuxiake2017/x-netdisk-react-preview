@@ -48,7 +48,7 @@ export function fileIcoFilter(fileType) {
 }
 
 export function formatFileSize(fileSize) {
-    if (fileSize) {
+    if (fileSize || fileSize === 0) {
         if (fileSize > 1024 * 1024) {
             fileSize = fileSize / (1024 * 1024);
             return fileSize.toFixed(2) + 'M';

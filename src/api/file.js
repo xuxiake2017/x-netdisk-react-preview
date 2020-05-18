@@ -33,3 +33,10 @@ export const GetFileMediaInfo = params => {
         data: qs.stringify(params)
     })
 }
+export const MkDir = params => {
+    return request({
+        url: '/dir/mkDir',
+        method: 'post',
+        data: qs.stringify(params)
+    })
+}
