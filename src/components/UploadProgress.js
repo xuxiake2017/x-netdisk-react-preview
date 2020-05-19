@@ -84,19 +84,6 @@ const UploadProgress = (props) => {
                             </div>
                         ))
                     }
-                    {/*<div className={classes.container}>
-                        <BorderLinearProgress
-                            className={classes.progress}
-                            variant="determinate"
-                            color="secondary"
-                            value={10}
-                        />
-                        <Tooltip title={'睿智物联工作周报 2020-04-03 徐冠杰.xlsx'}>
-                            <div className={classes.fileName}>
-                                睿智物联工作周报 2020-04-03 徐冠杰.xlsx
-                            </div>
-                        </Tooltip>
-                    </div>*/}
                 </Paper>
             </Fade>
         </React.Fragment>

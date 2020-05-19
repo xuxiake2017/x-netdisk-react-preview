@@ -190,9 +190,8 @@ const Home = () => {
                 }
             ]))
         }
-        if (file.fileType === FILE_TYPE.FILE_TYPE_OF_VIDEO) {
-            history.push('/mediaPreview/1')
-            console.log(history)
+        if (file.fileType === FILE_TYPE.FILE_TYPE_OF_VIDEO || file.fileType === FILE_TYPE.FILE_TYPE_OF_MUSIC) {
+            history.push(`/mediaPreview/${file.key}`)
         }
     }
     // 储存文件树路径
