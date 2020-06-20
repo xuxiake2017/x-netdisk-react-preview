@@ -10,6 +10,14 @@ const AppInfo = (state= {
         autoHideDuration: 3000,
         severity: 'info',
         message: '通知'
+    },
+    pdfViewer: {
+        isPreview: false,
+        scale: 1,
+        fileName: '',
+        numPages: 0,
+        currentNumPage: 1,
+        scrollTop: 0
     }
 }, action) => {
     switch (action.type) {
@@ -94,6 +102,30 @@ const AppInfo = (state= {
                 notification: {
                     ...state.notification,
                     open: false
+                }
+            }
+        }
+        case 'SET_PDF_VIEWER': {
+            return {
+                ...state,
+                pdfViewer: action.pdfViewer
+            }
+        }
+        case 'CHANGE_PDF_CURRENT_NUM_PAGE': {
+            return {
+                ...state,
+                pdfViewer: {
+                    ...state.pdfViewer,
+                    currentNumPage: action.currentNumPage
+                }
+            }
+        }
+        case 'CHANGE_PDF_SCALE': {
+            return {
+                ...state,
+                pdfViewer: {
+                    ...state.pdfViewer,
+                    scale: action.scale
                 }
             }
         }

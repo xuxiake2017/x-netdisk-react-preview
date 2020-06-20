@@ -3,10 +3,11 @@ import NavBar from "./NavBar";
 import { GetFileMediaInfo } from "../api/file";
 import { useParams } from "react-router";
 import Player from 'griffith'
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, useTheme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import FILE_TYPE from "../utils/FileUtils";
 import MusicPlayer from "./MusicPlayer";
+import DocPreview from "./DocPreview1";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -15,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: 24,
         marginRight: 24,
         marginBottom: 50,
-        height: '100%',
+        height: 'calc(100% - 144px)',
         [theme.breakpoints.up('lg')]: {
             width: 1100,
             marginLeft: 'auto',
@@ -24,7 +25,10 @@ const useStyles = makeStyles((theme) => ({
     },
     player: {
         height: '50%',
-        borderRadius: 10
+        borderRadius: 5,
+        boxShadow: theme.shadows[2],
+        border: '9px solid transparent',
+        borderColor: '#000'
     }
 }))
 
@@ -35,6 +39,7 @@ const MediaPreview = (props) => {
     const [playerProps, setPlayerProps] = React.useState(null)
     const [mediaFile, setMediaFile] = React.useState(null)
     const [audio, setAudio] = React.useState(null)
+    const [isDocPreview, setIsDocPreview] = React.useState(false)
     useEffect(() => {
         if (fileKey) {
             GetFileMediaInfo({ fileKey }).then(res => {
@@ -68,35 +73,53 @@ const MediaPreview = (props) => {
                         cover: data.fileMedia.musicPoster
                     }])
                 }
+                if (data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_WORD
+                || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_POWERPOINT
+                || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_EXCEL
+                || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_TXT) {
+                    setIsDocPreview(true)
+                }
             })
         }
     }, [])
     return (
         <React.Fragment>
             <NavBar>
-                <div className={classes.root}>
-                    {
-                        mediaFile && (
-                            <Typography variant="h6" gutterBottom>
-                                {mediaFile.fileName}
-                            </Typography>
-                        )
-                    }
-                    {
-                        playerProps && (
-                            <React.Fragment>
-                                <div className={classes.player}>
-                                    <Player {...playerProps} />
-                                </div>
-                            </React.Fragment>
-                        )
-                    }
-                    {
-                        audio && (
-                            <MusicPlayer audio={audio}></MusicPlayer>
-                        )
-                    }
-                </div>
+                {
+                    !isDocPreview && (
+                        <div className={classes.root}>
+                            {
+                                mediaFile && (
+                                    <Typography variant="h6" gutterBottom>
+                                        {mediaFile.fileName}
+                                    </Typography>
+                                )
+                            }
+                            {
+                                playerProps && (
+                                    <React.Fragment>
+                                        <div className={classes.player}>
+                                            <Player {...playerProps} />
+                                        </div>
+                                    </React.Fragment>
+                                )
+                            }
+                            {
+                                audio && (
+                                    <MusicPlayer audio={audio}></MusicPlayer>
+                                )
+                            }
+                        </div>
+                    )
+                }
+                {
+                    mediaFile && isDocPreview && (
+                        <DocPreview file={{
+                            previewUrl: mediaFile.fileOrigin.previewUrl,
+                            fileName: mediaFile.fileName
+                        }}/>
+                    )
+                }
             </NavBar>
         </React.Fragment>
     )

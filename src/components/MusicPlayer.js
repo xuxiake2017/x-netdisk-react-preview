@@ -15,7 +15,7 @@ const MusicPlayer = (props) => {
     }, [aplayerRef])
     return (
         <React.Fragment>
-            <div id="aplayer" ref={el => (aplayerRef.current = el)}></div>
+            <div id="aplayer" ref={aplayerRef} style={{color: '#000'}}></div>
         </React.Fragment>
     )
 }

@@ -190,7 +190,12 @@ const Home = () => {
                 }
             ]))
         }
-        if (file.fileType === FILE_TYPE.FILE_TYPE_OF_VIDEO || file.fileType === FILE_TYPE.FILE_TYPE_OF_MUSIC) {
+        if (file.fileType === FILE_TYPE.FILE_TYPE_OF_VIDEO
+            || file.fileType === FILE_TYPE.FILE_TYPE_OF_MUSIC
+            || file.fileType === FILE_TYPE.FILE_TYPE_OF_WORD
+            || file.fileType === FILE_TYPE.FILE_TYPE_OF_EXCEL
+            || file.fileType === FILE_TYPE.FILE_TYPE_OF_POWERPOINT
+            || file.fileType === FILE_TYPE.FILE_TYPE_OF_TXT) {
             history.push(`/mediaPreview/${file.key}`)
         }
     }

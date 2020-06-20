@@ -114,5 +114,26 @@ export const setViewMode = (viewMode) => {
     };
 };
 
+export const setPdfViewer = (pdfViewer) => {
+    return {
+        type: "SET_PDF_VIEWER",
+        pdfViewer
+    };
+};
+
+export const changePdfCurrentNumPage = (currentNumPage) => {
+    return {
+        type: "CHANGE_PDF_CURRENT_NUM_PAGE",
+        currentNumPage
+    };
+};
+
+export const changePdfScale= (scale) => {
+    return {
+        type: "CHANGE_PDF_SCALE",
+        scale
+    };
+};
+
 
 

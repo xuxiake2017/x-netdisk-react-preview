@@ -23,7 +23,6 @@ import {
 import {AccountArrowRight, AccountPlus} from "mdi-material-ui";
 import {
     useHistory,
-    useLocation
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { drawerToggleAction, setPaletteThemeType, openSuccessNotification } from '../actions'
@@ -49,8 +48,7 @@ import { Logout } from '../api/user'
 import { removeToken } from "../utils/auth";
 import ConfirmDialog from "./ConfirmDialog";
 import ShowStorage from "./ShowStorage";
-
-const drawerWidth = 240;
+import MediaInfoBar from "./MediaInfoBar";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -61,6 +59,12 @@ const useStyles = makeStyles((theme) => ({
         zIndex: theme.zIndex.drawer + 2,
         transition: 'background-color .4s',
         background: 'linear-gradient(45deg, #7A88FF, #ffd586)'
+    },
+    appBarTitle: {
+        maxWidth: 200
+    },
+    pdfPreviewAppBar: {
+        background: '#000'
     },
     menuButton: {
         marginRight: theme.spacing(2),
@@ -125,6 +129,9 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
+const drawerWidth = 240;
+const APP_NAME = 'X-NetDisk';
+
 export default function PersistentDrawerLeft(props) {
 
     const clientWidth = useSelector(state => {
@@ -138,7 +145,6 @@ export default function PersistentDrawerLeft(props) {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
     const history = useHistory()
-    const location = useLocation()
 
     let drawerOpen = useSelector(state => {
         return state.appInfo.drawerOpen
@@ -266,12 +272,21 @@ export default function PersistentDrawerLeft(props) {
         })
     }
 
+    const pdfViewer = useSelector((state) => {
+        return state.appInfo.pdfViewer
+    })
+    const isPdfPreview = React.useMemo(() => (
+        pdfViewer.isPreview
+    ))
+
     return (
         <div className={classes.root}>
             <ConfirmDialog open={logoutDialogOpen} title={'提示'} contentText={'你确认退出登陆吗?'} onClose={handleLogoutDialogClose} onConfirm={handleLogoutConfirm}/>
             <AppBar
                 position="fixed"
-                className={clsx(classes.appBar)}
+                className={clsx(classes.appBar, {
+                    [classes.pdfPreviewAppBar]: isPdfPreview
+                })}
                 color={themeType === 'dark' ? 'default' : 'primary'}
             >
                 <Toolbar>
@@ -286,56 +301,69 @@ export default function PersistentDrawerLeft(props) {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap>
-                        {'X-NetDisk'}
+                    <Typography variant="h6" noWrap className={classes.appBarTitle}>
+                        {isPdfPreview ? pdfViewer.fileName : APP_NAME}
                     </Typography>
-                    <div className={classes.grow} />
-                    <div className={classes.sectionDesktop}>
-                        {themeType === 'dark' ? (
-                            <Tooltip title="切换日间模式">
-                                <IconButton color="inherit" onClick={settingThemeType}>
-                                    <LightThemeTypeIcon/>
-                                </IconButton>
-                            </Tooltip>
-                        ) : (
-                            <Tooltip title="切换夜间模式">
-                                <IconButton color="inherit" onClick={settingThemeType}>
-                                    <DarkThemeTypeIcon/>
-                                </IconButton>
-                            </Tooltip>
-                        )}
-                        <IconButton aria-label="show 4 new mails" color="inherit">
-                            <Badge badgeContent={4} color="secondary">
-                                <MailIcon />
-                            </Badge>
-                        </IconButton>
-                        <IconButton aria-label="show 17 new notifications" color="inherit">
-                            <Badge badgeContent={17} color="secondary">
-                                <NotificationsIcon />
-                            </Badge>
-                        </IconButton>
-                        <IconButton
-                            edge="end"
-                            aria-label="account of current user"
-                            aria-controls={menuId}
-                            aria-haspopup="true"
-                            onClick={handleProfileMenuOpen}
-                            color="inherit"
-                        >
-                            {userInfo ? <Avatar className={classes.avatar} src={userInfo.avatar}/> : <AccountCircle /> }
-                        </IconButton>
-                    </div>
-                    <div className={classes.sectionMobile}>
-                        <IconButton
-                            aria-label="show more"
-                            aria-controls={mobileMenuId}
-                            aria-haspopup="true"
-                            onClick={handleMobileMenuOpen}
-                            color="inherit"
-                        >
-                            <MoreIcon />
-                        </IconButton>
-                    </div>
+                    {
+                        !isPdfPreview && (
+                            <React.Fragment>
+                                <div className={classes.grow} />
+                                <div className={classes.sectionDesktop}>
+                                    {themeType === 'dark' ? (
+                                        <Tooltip title="切换日间模式">
+                                            <IconButton color="inherit" onClick={settingThemeType}>
+                                                <LightThemeTypeIcon/>
+                                            </IconButton>
+                                        </Tooltip>
+                                    ) : (
+                                        <Tooltip title="切换夜间模式">
+                                            <IconButton color="inherit" onClick={settingThemeType}>
+                                                <DarkThemeTypeIcon/>
+                                            </IconButton>
+                                        </Tooltip>
+                                    )}
+                                    <IconButton aria-label="show 4 new mails" color="inherit">
+                                        <Badge badgeContent={4} color="secondary">
+                                            <MailIcon />
+                                        </Badge>
+                                    </IconButton>
+                                    <IconButton aria-label="show 17 new notifications" color="inherit">
+                                        <Badge badgeContent={17} color="secondary">
+                                            <NotificationsIcon />
+                                        </Badge>
+                                    </IconButton>
+                                    <IconButton
+                                        edge="end"
+                                        aria-label="account of current user"
+                                        aria-controls={menuId}
+                                        aria-haspopup="true"
+                                        onClick={handleProfileMenuOpen}
+                                        color="inherit"
+                                    >
+                                        {userInfo ? <Avatar className={classes.avatar} src={userInfo.avatar}/> : <AccountCircle /> }
+                                    </IconButton>
+                                </div>
+                                <div className={classes.sectionMobile}>
+                                    <IconButton
+                                        aria-label="show more"
+                                        aria-controls={mobileMenuId}
+                                        aria-haspopup="true"
+                                        onClick={handleMobileMenuOpen}
+                                        color="inherit"
+                                    >
+                                        <MoreIcon />
+                                    </IconButton>
+                                </div>
+                            </React.Fragment>
+                        )
+                    }
+                    {
+                        isPdfPreview && (
+                            <React.Fragment>
+                                <MediaInfoBar/>
+                            </React.Fragment>
+                        )
+                    }
                 </Toolbar>
             </AppBar>
             {renderMobileMenu}
