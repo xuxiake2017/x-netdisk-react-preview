@@ -1,8 +1,8 @@
 const baseUrl = () => {
     if (process.env.NODE_ENV === 'development') {
-        return 'http://www.xikcloud.com:8181/netdisk'
+        return 'http://127.0.0.1:8080/netdisk'
     } else if (process.env.NODE_ENV === 'production') {
-        return 'http://www.xikcloud.com:8181/netdisk'
+        return 'http://127.0.0.1:8080/netdisk'
     }
 }
 
