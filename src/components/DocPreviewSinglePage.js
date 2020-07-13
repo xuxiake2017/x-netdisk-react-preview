@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { usePdf } from '@mikecousins/react-pdf';
 import PropTypes from "prop-types";
 import { useSelector, useDispatch } from "react-redux";
 import { drawerToggleAction, setPdfViewer } from "../actions";
 import { makeStyles } from "@material-ui/core/styles";
 import 'pdfjs-dist/web/pdf_viewer.css';
+import Loading from "./Loading";
 
 const useStyles = makeStyles(() => ({
     container: {
@@ -34,11 +35,19 @@ const useStyles = makeStyles(() => ({
         right: 0,
         bottom: 0,
         left: 0,
+    },
+    loadingSpan: {
+        textAlign: "center"
     }
 }))
 
+/**
+ * PDF Viewer(单页面，速度快)
+ * @param props
+ * @returns {*}
+ * @constructor
+ */
 const DocPreview = (props) => {
-    // const [page, setPage] = useState(1);
     const canvasRef = useRef(null);
     const dispatch = useDispatch()
     const classes = useStyles()
@@ -46,8 +55,8 @@ const DocPreview = (props) => {
     const pdfViewer = useSelector(state => {
         return state.appInfo.pdfViewer
     })
-    const scale = React.useMemo(() => pdfViewer.scale)
-    const currentNumPage = React.useMemo(() => pdfViewer.currentNumPage)
+    const scale = React.useMemo(() => pdfViewer.scale, [pdfViewer])
+    const currentNumPage = React.useMemo(() => pdfViewer.currentNumPage, [pdfViewer])
 
     const { pdfDocument, pdfPage } = usePdf({
         workerSrc: `/static/pdfjs/2.2.228/pdf.worker.js`,
@@ -60,6 +69,11 @@ const DocPreview = (props) => {
                 ...pdfViewer,
                 numPages: pdfDocument.numPages,
             }))
+        },
+        onPageRenderSuccess: () => {
+            const canvas = canvasRef.current
+            let pageDiv = document.getElementById('canvas-out')
+            pageDiv.setAttribute('style', `position: relative; height: ${canvas.height + 18}px; width: ${canvas.width + 18}px;`);
         }
     });
 
@@ -86,8 +100,8 @@ const DocPreview = (props) => {
         <div className={classes.container}>
             <div className={classes.viewerContainer}>
                 <div className={'pdfViewer'}>
-                    <div className={'page'}>
-                        {!pdfDocument && <span>Loading...</span>}
+                    <div className={'page'} id={'canvas-out'}>
+                        {!pdfDocument && <Loading type={"DualRing"} size={50} />}
                         <canvas ref={canvasRef} />
                     </div>
                 </div>

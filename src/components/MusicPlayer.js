@@ -11,7 +11,11 @@ const MusicPlayer = (props) => {
             container: aplayerRef.current,
             audio: props.audio
         }
-        new APlayer(options);
+        const ap = new APlayer(options);
+        return () => {
+            // 销毁播放器
+            ap.destroy()
+        }
     }, [aplayerRef])
     return (
         <React.Fragment>

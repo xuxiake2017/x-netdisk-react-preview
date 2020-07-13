@@ -7,7 +7,7 @@ import { makeStyles, useTheme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import FILE_TYPE from "../utils/FileUtils";
 import MusicPlayer from "./MusicPlayer";
-import DocPreview from "./DocPreview1";
+import DocPreview from "./DocPreviewSinglePage";
 
 const useStyles = makeStyles((theme) => ({
     root: {

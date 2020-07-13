@@ -94,7 +94,7 @@ const Home = () => {
     const [finished, setFinised] = React.useState(false)
 
     // 重载标记
-    let reloadFlag = false
+    let reloadFlag = React.useRef(false)
 
     const uploadAction = `${AppConf.baseUrl()}/file/fileUpload`
     useEffect(() => {
@@ -113,7 +113,8 @@ const Home = () => {
             pageNum: 1
         }
         setPagination(pagination_)
-        reloadFlag = true;
+        reloadFlag.current = true
+
         getFileList({
             ...filters_,
             ...pagination_
@@ -144,7 +145,7 @@ const Home = () => {
                     fileList_.push(item)
                 }
             })
-            if (reloadFlag) {
+            if (reloadFlag.current) {
                 setDirList([
                     ...dirList_
                 ])
@@ -152,16 +153,20 @@ const Home = () => {
                     ...fileList_
                 ])
             } else {
-                setDirList([
-                    ...dirList,
-                    ...dirList_
-                ])
-                setFileList([
-                    ...fileList,
-                    ...fileList_
-                ])
+                setDirList(prevState => {
+                    return [
+                        ...prevState,
+                        ...dirList_
+                    ]
+                })
+                setFileList(prevState => {
+                    return [
+                        ...prevState,
+                        ...fileList_
+                    ]
+                })
             }
-            reloadFlag = false;
+            reloadFlag.current = false
         })
     }
     // 文件单击
@@ -428,7 +433,9 @@ const Home = () => {
         }
     }
     const setReload = (flag) => {
-        reloadFlag = flag
+        // reloadFlag = flag
+        // setReloadFlag(flag)
+        reloadFlag.current = flag
     }
     const handleReLoad = (nextViewMode) => {
         if (nextViewMode === 'GRID') {

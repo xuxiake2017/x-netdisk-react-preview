@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from 'prop-types'
 import PDFJS from 'pdfjs-dist/build/pdf';
@@ -8,8 +8,7 @@ import { drawerToggleAction, setPdfViewer, changePdfCurrentNumPage } from "../ac
 import {useDispatch, useSelector} from "react-redux";
 import {Scrollbars} from "react-custom-scrollbars";
 
-PDFJS.GlobalWorkerOptions.workerSrc = `/static/pdfjs/pdf.worker.js`;
-// PDFJS.GlobalWorkerOptions.workerSrc = require('pdfjs-dist/build/pdf.worker')
+PDFJS.GlobalWorkerOptions.workerSrc = `/static/pdfjs/2.3.200/pdf.worker.js`;
 
 const useStyles = makeStyles(() => ({
     container: {
@@ -49,7 +48,6 @@ const DocPreview = (props) => {
         return state.appInfo.pdfViewer
     })
     const scale = React.useMemo(() => pdfViewer.scale)
-    const canvasRef = React.useRef(null);
     const pdfViewerRef = React.useRef(null);
 
     const [canvasHeight, setCanvasHeight] = React.useState(0)
@@ -66,7 +64,6 @@ const DocPreview = (props) => {
         if (pdf) {
             // renderPDF(pdf)
             reRenderPDF(pdf)
-            console.log(pdfViewerRef.current.scaleX)
         }
     }, [scale])
 
@@ -164,7 +161,6 @@ const DocPreview = (props) => {
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
-                console.log(canvas.height)
                 setCanvasHeight(canvas.height)
 
                 const renderContext = {
@@ -172,8 +168,8 @@ const DocPreview = (props) => {
                     viewport: viewport
                 };
 
-                // renderPage(page, renderContext, pageDiv, viewport)
-                page.render(renderContext)
+                renderPage(page, renderContext, pageDiv, viewport)
+                // page.render(renderContext)
             });
         }
     }

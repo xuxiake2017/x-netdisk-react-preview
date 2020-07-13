@@ -115,7 +115,7 @@ const FileList = (props) => {
                 )
             }
             {
-                props.finised && !props.loading && viewMode !== 'LIST' && (
+                props.finished && !props.loading && viewMode !== 'LIST' && (
                     // 列表加载完毕提示
                     <ListFinishedText/>
                 )
@@ -168,7 +168,7 @@ FileList.propTypes = {
     onChangePage: PropTypes.func,
     onChangeRowsPerPage: PropTypes.func,
     setReload: PropTypes.func,
-    finised: PropTypes.bool,
+    finished: PropTypes.bool,
 }
 
 export default FileList

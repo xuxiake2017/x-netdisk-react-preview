@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme) => ({
     appBar: {
         zIndex: theme.zIndex.drawer + 2,
         transition: 'background-color .4s',
-        background: 'linear-gradient(45deg, #7A88FF, #ffd586)'
+        background: theme.palette.type === 'dark' ? 'rgba(0,0,0,1)' : 'linear-gradient(45deg, #7A88FF, #ffd586)'
     },
     appBarTitle: {
         maxWidth: 200
