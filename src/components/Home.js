@@ -200,7 +200,8 @@ const Home = () => {
             || file.fileType === FILE_TYPE.FILE_TYPE_OF_WORD
             || file.fileType === FILE_TYPE.FILE_TYPE_OF_EXCEL
             || file.fileType === FILE_TYPE.FILE_TYPE_OF_POWERPOINT
-            || file.fileType === FILE_TYPE.FILE_TYPE_OF_TXT) {
+            || file.fileType === FILE_TYPE.FILE_TYPE_OF_TXT
+            || file.fileType === FILE_TYPE.FILE_TYPE_OF_PDF) {
             history.push(`/mediaPreview/${file.key}`)
         }
     }

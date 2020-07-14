@@ -74,9 +74,10 @@ const MediaPreview = (props) => {
                     }])
                 }
                 if (data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_WORD
-                || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_POWERPOINT
-                || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_EXCEL
-                || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_TXT) {
+                    || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_POWERPOINT
+                    || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_EXCEL
+                    || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_TXT
+                    || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_PDF) {
                     setIsDocPreview(true)
                 }
             })

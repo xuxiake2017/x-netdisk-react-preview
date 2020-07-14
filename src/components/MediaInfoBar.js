@@ -1,17 +1,12 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import IconButton from "@material-ui/core/IconButton";
-import {
-    ZoomIn,
-    ZoomOut,
-    ArrowDownward,
-    ArrowUpward
-} from '@material-ui/icons'
-import {setPdfViewer, changePdfScale, changePdfCurrentNumPage} from "../actions";
+import { changePdfCurrentNumPage} from "../actions";
 import { useDispatch, useSelector } from "react-redux";
 import InputBase from "@material-ui/core/InputBase";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
+import MySvgIcon from "./SvgIcon";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -50,18 +45,6 @@ const MediaInfoBar = (props) => {
     const pdfViewer = useSelector(state => {
         return state.appInfo.pdfViewer
     })
-    const handleZoomIn = () => {
-        if (pdfViewer.scale + 0.1 > 4.0) {
-            return
-        }
-        dispatch(changePdfScale(pdfViewer.scale + 0.1))
-    }
-    const handleZoomOut = () => {
-        if (pdfViewer.scale - 0.1 < 0.1) {
-            return
-        }
-        dispatch(changePdfScale(pdfViewer.scale - 0.1))
-    }
     const handleChange = (e) => {
         console.log(e)
     }
@@ -75,21 +58,13 @@ const MediaInfoBar = (props) => {
         if (pdfViewer.currentNumPage === pdfViewer.numPages) {
             return
         }
-        // debugger
         dispatch(changePdfCurrentNumPage(pdfViewer.currentNumPage + 1))
     }
     return (
         <React.Fragment>
             <div className={classes.root}>
-                {/*<IconButton aria-label="放大" color="secondary" onClick={handleZoomIn}>*/}
-                {/*    <ZoomIn />*/}
-                {/*</IconButton>*/}
-                {/*<IconButton aria-label="缩小" color="secondary" onClick={handleZoomOut}>*/}
-                {/*    <ZoomOut />*/}
-                {/*</IconButton>*/}
-
                 <IconButton aria-label="上一页" color="secondary" onClick={handlePagePrev} className={classes.btn}>
-                    <ArrowUpward />
+                    <MySvgIcon name={'#icon-arrow_up_circle_fill'}/>
                 </IconButton>
 
                 <Paper classes={{
@@ -105,7 +80,7 @@ const MediaInfoBar = (props) => {
 
 
                 <IconButton aria-label="下一页" color="secondary" onClick={handlePageNext} className={classes.btn}>
-                    <ArrowDownward />
+                    <MySvgIcon name={'#icon-arrow_down_circle_fill'}/>
                 </IconButton>
             </div>
         </React.Fragment>
