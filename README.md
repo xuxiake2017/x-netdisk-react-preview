@@ -31,7 +31,7 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 + [Cloudreve](https://github.com/cloudreve/Cloudreve) 主要样式参考开源
 ## 更新日志
 #### 2020.07.15
-- 整理文件夹，将组建归类
+- 整理文件夹，将组件归类
 - 更改路由为HashRouter（服务器需要部署多个web）
 ## 持续更新ing
 
