@@ -3,19 +3,19 @@ import {
 } from "@material-ui/core";
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import LoginLeftBg from '../assets/login_left_bg.jpg'
+import LoginLeftBg from '../../assets/login_left_bg.jpg'
 import classnames from 'classnames'
 // 引入scss测试
-import LoginFormStyles from '../style/LoginForm.module.scss'
+import LoginFormStyles from '../../style/LoginForm.module.scss'
 import { useHistory } from 'react-router-dom'
-import { RequestLogin } from "../api/user";
-import AppConf from "../conf/AppConf";
+import { RequestLogin } from "../../api/user";
+import AppConf from "../../conf/AppConf";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import {Visibility, VisibilityOff} from "@material-ui/icons";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useDispatch } from "react-redux";
-import { openSuccessNotification, setUserInfo, drawerToggleAction } from "../actions";
-import { setToken } from "../utils/auth";
+import { openSuccessNotification, setUserInfo, drawerToggleAction } from "../../actions";
+import { setToken } from "../../utils/auth";
 
 const useStyles = makeStyles(theme => (
     {

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { PhotoSlider } from "react-photo-view";
 import { useSelector, useDispatch } from "react-redux";
-import { closeImagePreviewPopover } from "../actions";
+import { closeImagePreviewPopover } from "../../actions";
 import 'react-photo-view/dist/index.css';
 
 const ImageView = (props) => {

@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import NavBar from "./NavBar";
-import { GetFileMediaInfo } from "../api/file";
+import NavBar from "../NavBar";
+import { GetFileMediaInfo } from "../../api/file";
 import { useParams } from "react-router";
 import Player from 'griffith'
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-import FILE_TYPE from "../utils/FileUtils";
+import FILE_TYPE from "../../utils/FileUtils";
 import MusicPlayer from "./MusicPlayer";
 import DocPreview from "./DocPreviewSinglePage";
 

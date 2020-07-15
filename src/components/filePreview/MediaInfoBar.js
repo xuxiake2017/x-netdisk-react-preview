@@ -1,12 +1,12 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import IconButton from "@material-ui/core/IconButton";
-import { changePdfCurrentNumPage} from "../actions";
+import { changePdfCurrentNumPage} from "../../actions";
 import { useDispatch, useSelector } from "react-redux";
 import InputBase from "@material-ui/core/InputBase";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import MySvgIcon from "./SvgIcon";
+import MySvgIcon from "../common/SvgIcon";
 
 const useStyles = makeStyles((theme) => ({
     root: {

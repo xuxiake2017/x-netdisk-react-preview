@@ -3,18 +3,18 @@ import {
     Switch,
     Route
 } from 'react-router-dom';
-import Login from "./components/Login";
+import Login from "./components/login/Login";
 import { useDispatch, useSelector } from "react-redux"
 import { setClientHeight, setClientWidth } from "./actions";
 import { CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
 import Home from "./components/Home";
 import { GlobalStyle } from "./style/GlobalStyle";
 import { useHistory } from "react-router-dom";
-import Notification from "./components/Notification";
-import AuthRoute from "./components/AuthRoute";
-import Register from "./components/Register";
-import ImageView from "./components/ImageView";
-import MediaPreview from "./components/MediaPreview";
+import Notification from "./components/common/Notification";
+import AuthRoute from "./components/route/AuthRoute";
+import Register from "./components/login/Register";
+import ImageView from "./components/filePreview/ImageView";
+import MediaPreview from "./components/filePreview/MediaPreview";
 
 export default function App(props) {
 

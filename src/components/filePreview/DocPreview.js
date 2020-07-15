@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import PDFJS from 'pdfjs-dist/build/pdf';
 import { TextLayerBuilder } from 'pdfjs-dist/web/pdf_viewer';
 import 'pdfjs-dist/web/pdf_viewer.css';
-import { drawerToggleAction, setPdfViewer, changePdfCurrentNumPage } from "../actions";
+import { drawerToggleAction, setPdfViewer, changePdfCurrentNumPage } from "../../actions";
 import {useDispatch, useSelector} from "react-redux";
 import {Scrollbars} from "react-custom-scrollbars";
 

@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { makeStyles } from "@material-ui/core/styles";
 import { Divider } from "@material-ui/core";
-import { formatFileSize } from "../utils/FileUtils";
+import { formatFileSize } from "../../utils/FileUtils";
 
 const useStyle = makeStyles((theme) => ({
     'aside-absolute-container': {

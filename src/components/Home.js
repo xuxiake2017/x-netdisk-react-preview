@@ -3,14 +3,14 @@ import React, {useEffect} from "react";
 import {
     makeStyles, Divider
 } from "@material-ui/core";
-import FileList from "./FileList";
+import FileList from "./file/FileList";
 import {useDispatch, useSelector} from "react-redux";
 import {GetFileList, UploadMD5, CheckMd5, MkDir} from "../api/file";
-import FileBreadcrumbs from "./FileBreadcrumbs";
+import FileBreadcrumbs from "./file/FileBreadcrumbs";
 import Upload from "./upload";
 import AppConf from "../conf/AppConf";
 import GetFileMD5 from "../utils/getFileMD5";
-import ContextMenu from "./ContextMenu";
+import ContextMenu from "./file/ContextMenu";
 import {
     delFile,
     openWarningNotification,
@@ -24,8 +24,8 @@ import { GetInfo } from "../api/user";
 import FILE_TYPE from "../utils/FileUtils";
 import { useHistory } from "react-router";
 import { Scrollbars } from 'react-custom-scrollbars';
-import UploadProgress from "./UploadProgress";
-import TextFieldDialog from "./TextFieldDialog";
+import UploadProgress from "./file/UploadProgress";
+import TextFieldDialog from "./common/TextFieldDialog";
 
 const useStyles = makeStyles((theme) => ({
     root: {

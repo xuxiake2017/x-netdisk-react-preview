@@ -1,4 +1,4 @@
-import Navbar from "./NavBar";
+import Navbar from "../NavBar";
 import React from "react";
 import { makeStyles } from "@material-ui/core";
 import LoginForm from "./LoginForm";

@@ -3,7 +3,7 @@ import {Grid, Typography} from "@material-ui/core";
 import FileIcon from "./FileIcon";
 import { makeStyles } from "@material-ui/core/styles";
 import PropTypes from "prop-types";
-import Loading from "./Loading";
+import Loading from "../common/Loading";
 import FileListView from "./FileListView";
 import {useSelector} from "react-redux";
 import ListFinishedText from "./ListFinishedText";

@@ -2,14 +2,14 @@ import {
     ButtonBase, Divider, lighten, makeStyles
 } from "@material-ui/core";
 import classNames from "classnames";
-import MySvgIcon from "./SvgIcon";
+import MySvgIcon from "../common/SvgIcon";
 import Tooltip from "@material-ui/core/Tooltip";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import ContentLoader from 'react-content-loader'
 import PropTypes from 'prop-types'
-import { fileIcoFilter } from "../utils/FileUtils";
+import { fileIcoFilter } from "../../utils/FileUtils";
 import {useSelector} from "react-redux";
 
 const useStyles = makeStyles((theme) => ({

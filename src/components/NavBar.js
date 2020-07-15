@@ -46,9 +46,9 @@ import {
 } from "@material-ui/core";
 import { Logout } from '../api/user'
 import { removeToken } from "../utils/auth";
-import ConfirmDialog from "./ConfirmDialog";
-import ShowStorage from "./ShowStorage";
-import MediaInfoBar from "./MediaInfoBar";
+import ConfirmDialog from "./common/ConfirmDialog";
+import ShowStorage from "./file/ShowStorage";
+import MediaInfoBar from "./filePreview/MediaInfoBar";
 
 const useStyles = makeStyles((theme) => ({
     root: {

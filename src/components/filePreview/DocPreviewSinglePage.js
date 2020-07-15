@@ -2,12 +2,12 @@ import React, {useRef, useState} from 'react';
 import { usePdf } from '@mikecousins/react-pdf';
 import PropTypes from "prop-types";
 import { useSelector, useDispatch } from "react-redux";
-import {changePdfScale, drawerToggleAction, setPdfViewer} from "../actions";
+import {changePdfScale, drawerToggleAction, setPdfViewer} from "../../actions";
 import { makeStyles } from "@material-ui/core/styles";
 import 'pdfjs-dist/web/pdf_viewer.css';
-import Loading from "./Loading";
+import Loading from "../common/Loading";
 import Paper from "@material-ui/core/Paper";
-import MySvgIcon from "./SvgIcon";
+import MySvgIcon from "../common/SvgIcon";
 import IconButton from "@material-ui/core/IconButton";
 
 const useStyles = makeStyles((theme) => ({

@@ -1,8 +1,8 @@
 import React from "react";
 import { Breadcrumbs, Button, makeStyles, Fade, Tooltip } from "@material-ui/core";
 import PropTypes from "prop-types";
-import MySvgIcon from "./SvgIcon";
-import { setViewMode } from "../actions";
+import MySvgIcon from "../common/SvgIcon";
+import { setViewMode } from "../../actions";
 import { useDispatch, useSelector } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
