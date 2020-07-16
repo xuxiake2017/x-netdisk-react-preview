@@ -91,7 +91,7 @@ const Home = () => {
 
     // 加载状态标记
     const [loading, setLoading] = React.useState(false)
-    const [finished, setFinised] = React.useState(false)
+    const [finished, setFinished] = React.useState(false)
 
     // 重载标记
     let reloadFlag = React.useRef(false)
@@ -123,7 +123,7 @@ const Home = () => {
     // 获取文件
     const getFileList = (params) => {
         // setLoading(true)
-        setFinised(false)
+        setFinished(false)
         GetFileList(params).then(res => {
             setLoading(false)
             const pagination_ = {}
@@ -132,7 +132,7 @@ const Home = () => {
             pagination_.pageSize = res.data.pageInfo.pageSize
             pagination_.pages = res.data.pageInfo.pages
             if (pagination_.pageNum * pagination_.pageSize > res.data.pageInfo.list.length) {
-                setFinised(true)
+                setFinished(true)
             }
             setPagination(pagination_)
             const data = res.data.pageInfo.list
@@ -415,7 +415,7 @@ const Home = () => {
                                    top }) => {
         if (scrollHeight - (scrollTop + clientHeight) < 100) {
             if (pagination.pageNum * pagination.pageSize > (fileList.length + dirList.length)) {
-                setFinised(true)
+                setFinished(true)
                 return;
             }
             if (loading) {
@@ -512,7 +512,7 @@ const Home = () => {
                                 handleFileClick(file)
                             }} onFileDoubleClick={file => {
                             handleFileDoubleClick(file)
-                        }} setReload={setReload} finised={finished}/>
+                        }} setReload={setReload} finished={finished}/>
                     </Scrollbars>
                     <UploadProgress open={uploadProgressOpen} uploadFileList={uploadFileList}/>
                 </div>
