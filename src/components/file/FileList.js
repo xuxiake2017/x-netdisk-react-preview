@@ -52,7 +52,7 @@ const FileList = (props) => {
                     <FileListView fileList={[
                         ...props.dirList,
                         ...props.fileList
-                    ]} onFileClick={handleFileClick} onFileDoubleClick={handleFileDoubleClick} {...pagination}/>
+                    ]} onFileClick={handleFileClick} onFileDoubleClick={handleFileDoubleClick} onContextMenu={props.onFileContextMenu} {...pagination}/>
                 )
             }
 
@@ -77,7 +77,7 @@ const FileList = (props) => {
                                             handleFileClick(file)
                                         }} onDoubleClick={() => {
                                             handleFileDoubleClick(file)
-                                        }}/>
+                                        }} onFileContextMenu={(e) => props.onFileContextMenu(e, file)}/>
                                     </Grid>
                                 ))}
                             </Grid>
@@ -106,7 +106,7 @@ const FileList = (props) => {
                                             handleFileClick(file)
                                         }} onDoubleClick={() => {
                                             handleFileDoubleClick(file)
-                                        }}/>
+                                        }} onFileContextMenu={(e) => props.onFileContextMenu(e, file)}/>
                                     </Grid>
                                 ))}
                             </Grid>
@@ -169,6 +169,7 @@ FileList.propTypes = {
     onChangeRowsPerPage: PropTypes.func,
     setReload: PropTypes.func,
     finished: PropTypes.bool,
+    onFileContextMenu: PropTypes.func,
 }
 
 export default FileList

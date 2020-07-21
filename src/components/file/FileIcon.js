@@ -138,6 +138,7 @@ const FileIcon = (props) => {
                 )}
                 onClick={handleClick}
                 onDoubleClick={handleDoubleClick}
+                onContextMenu={props.onFileContextMenu}
             >
                 {props.file.isDir === 1 && viewMode === 'GRID_OF_PREVIEW' && (
                     <React.Fragment>
@@ -202,6 +203,12 @@ const FileIcon = (props) => {
     )
 }
 
+FileIcon.defaultProps = {
+    onFileContextMenu: (e) => {
+        e.stopPropagation();
+    }
+}
+
 FileIcon.propTypes = {
     file: PropTypes.shape({
         isDir: PropTypes.number,
@@ -219,7 +226,8 @@ FileIcon.propTypes = {
         musicPoster: PropTypes.string
     }).isRequired,
     onClick: PropTypes.func,
-    onDoubleClick: PropTypes.func
+    onDoubleClick: PropTypes.func,
+    onFileContextMenu: PropTypes.func
 }
 
 export default FileIcon

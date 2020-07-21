@@ -40,3 +40,27 @@ export const MkDir = params => {
         data: qs.stringify(params)
     })
 }
+
+export const DeleteFile = params => {
+    return request({
+        url: '/file/deleteFile',
+        method: 'post',
+        data: qs.stringify(params)
+    })
+}
+
+export const ListAllDir = params => {
+    return request({
+        url: '/dir/listAllDir',
+        method: 'post',
+        data: qs.stringify(params)
+    })
+}
+
+export const MoveFile = params => {
+    return request({
+        url: '/dir/moveFile',
+        method: 'post',
+        data: qs.stringify(params)
+    })
+}

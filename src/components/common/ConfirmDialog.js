@@ -11,13 +11,13 @@ import {makeStyles} from "@material-ui/core/styles";
 const useStyles = makeStyles(() => (
     {
         paper: {
-            width: '30%'
+            width: props => props.width
         }
     }
 ))
 
-const ConfirmDialog = ({ open, onClose, onConfirm, title, contentText }) => {
-    const classes = useStyles()
+const ConfirmDialog = ({ open, onClose, onConfirm, title, ...rest }) => {
+    const classes = useStyles(rest)
     return (
         <React.Fragment>
             <Dialog
@@ -29,9 +29,15 @@ const ConfirmDialog = ({ open, onClose, onConfirm, title, contentText }) => {
             >
                 <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        {contentText}
-                    </DialogContentText>
+                    {
+                        typeof rest.children === 'string' ? (
+                            <DialogContentText id="alert-dialog-description">
+                                {rest.children}
+                            </DialogContentText>
+                        ) : (
+                            rest.children
+                        )
+                    }
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={onClose} color="primary">
@@ -46,12 +52,16 @@ const ConfirmDialog = ({ open, onClose, onConfirm, title, contentText }) => {
     )
 }
 
+ConfirmDialog.defaultProps = {
+    width: '30%'
+}
+
 ConfirmDialog.propTypes = {
     open: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     onConfirm: PropTypes.func.isRequired,
     title: PropTypes.string.isRequired,
-    contentText: PropTypes.string.isRequired,
+    width: PropTypes.string,
 }
 
 export default ConfirmDialog

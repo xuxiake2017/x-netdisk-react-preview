@@ -281,7 +281,7 @@ export default function PersistentDrawerLeft(props) {
 
     return (
         <div className={classes.root}>
-            <ConfirmDialog open={logoutDialogOpen} title={'提示'} contentText={'你确认退出登陆吗?'} onClose={handleLogoutDialogClose} onConfirm={handleLogoutConfirm}/>
+            <ConfirmDialog open={logoutDialogOpen} title={'提示'} onClose={handleLogoutDialogClose} onConfirm={handleLogoutConfirm} >你确认退出登陆吗?</ConfirmDialog>
             <AppBar
                 position="fixed"
                 className={clsx(classes.appBar, {

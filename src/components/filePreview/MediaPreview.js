@@ -82,6 +82,12 @@ const MediaPreview = (props) => {
                 }
             })
         }
+        return () => {
+            setPlayerProps(null)
+            setMediaFile(null)
+            setAudio(null)
+            setIsDocPreview(false)
+        }
     }, [])
     return (
         <React.Fragment>

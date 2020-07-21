@@ -4,28 +4,27 @@ import {
     makeStyles, Divider
 } from "@material-ui/core";
 import FileList from "./file/FileList";
-import {useDispatch, useSelector} from "react-redux";
-import {GetFileList, UploadMD5, CheckMd5, MkDir} from "../api/file";
+import { useDispatch } from "react-redux";
+import { GetFileList, MkDir, DeleteFile } from "../api/file";
 import FileBreadcrumbs from "./file/FileBreadcrumbs";
-import Upload from "./upload";
-import AppConf from "../conf/AppConf";
-import GetFileMD5 from "../utils/getFileMD5";
 import ContextMenu from "./file/ContextMenu";
 import {
-    delFile,
-    openWarningNotification,
     openSuccessNotification,
-    storeFile,
     setUserInfo,
     openImagePreviewPopover,
-    drawerToggleAction, openErrNotification
+    drawerToggleAction
 } from "../actions";
 import { GetInfo } from "../api/user";
 import FILE_TYPE from "../utils/FileUtils";
 import { useHistory } from "react-router";
 import { Scrollbars } from 'react-custom-scrollbars';
-import UploadProgress from "./file/UploadProgress";
 import TextFieldDialog from "./common/TextFieldDialog";
+import FileContextMenu from "./file/FileContextMenu";
+import UploadWithBusiness from "./file/UploadWithBusiness";
+import { getToken } from '../utils/auth'
+import AppConf from "../conf/AppConf"
+import ConfirmDialog from "./common/ConfirmDialog";
+import MoveFileDialog from "./file/MoveFileDialog";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -70,24 +69,6 @@ const Home = () => {
         pageNum: 1,
         pageSize: 20
     })
-    // 文件上传
-    const [uploadData, setUploadData] = React.useState({
-        parentId: -1,
-        md5Hex: '',
-        lastModifiedDate: null
-    })
-
-    const user = useSelector(state => {
-        return state.userInfo
-    })
-
-    const filesInStore = useSelector(state => {
-        return state.files
-    })
-
-    const getFile = (uid) => {
-        return filesInStore.find(file => file.uid === uid)
-    }
 
     // 加载状态标记
     const [loading, setLoading] = React.useState(false)
@@ -96,7 +77,6 @@ const Home = () => {
     // 重载标记
     let reloadFlag = React.useRef(false)
 
-    const uploadAction = `${AppConf.baseUrl()}/file/fileUpload`
     useEffect(() => {
         const params = {
             ...pagination,
@@ -226,72 +206,12 @@ const Home = () => {
         setLoading(true)
         reLoad(filters_)
     }
-    const uploadRef = React.useRef(null)
-    // 选择文件上传
-    const selectFile = () => {
-        uploadRef.current.uploadInnerRef.current.handleClick()
-        setContextMenuOpen(false)
-    }
-    // 开始上传
-    const startUpload = (uid) => {
-
-        uploadRef.current.submit(uid)
-    }
-    // 选择上传文件后
-    const changeHandle = (file, fileList) => {
-        // console.log(file)
-        if (file.status === 'ready') {
-
-            if (file.size > 1024 * 1024 * 100) {
-                dispatch(openWarningNotification('文件过大，请重新选择'))
-                return;
-            }
-            GetFileMD5(file.raw, file.uid, (fileInfo) => {
-                let isExist = false;
-                // console.log(fileInfo)
-                CheckMd5({ md5Hex: fileInfo.md5Hex }).then(res => {
-                    console.log(res)
-                    if (res.data === 20034) {
-                        // 服务器存在该MD5值
-                        isExist = true
-                    } else if (res.data === 20033) {
-                        // 服务器不存在该MD5值
-                        isExist = false
-                    }
-                    dispatch(storeFile({ ...fileInfo, isExist, parentId: filters.parentId }))
-                    startUpload(file.uid)
-                }).catch(res => {
-                    console.log(res)
-                })
-            })
-        }
-    }
-    // 上传成功回调
-    const handleUploadSuccess = (res, file) => {
-        console.log('handleUploadSuccess', file)
-        if (res.code !== 20000) {
-            dispatch(openErrNotification(res.msg))
-        } else {
-            dispatch(openSuccessNotification(`${file.name}上传成功！`))
-            reLoad(filters)
-            GetInfo().then(res => {
-                dispatch(setUserInfo(res.data))
-            })
-        }
-        let flag = true
-        uploadFileList.forEach(item => {
-            if (item.percentage !== 100) {
-                flag = false
-            }
-        })
-        if (flag) {
-            setUploadProgressOpen(false)
-        }
-
-    }
     // 鼠标右键点击
     const handleContextMenu = (e) => {
         e.preventDefault()
+        if (contextMenuOpen || fileContextMenuOpen) {
+            return
+        }
         setContextMenuOpen(true)
         setContextMenuPosition({
             mouseX: e.clientX,
@@ -311,69 +231,6 @@ const Home = () => {
             mouseY: null
         })
     }
-    // 在文件移除之前
-    const beforeRemove = (file, fileList) => {
-        // this.$toast(`移除文件"${file.name}"`);
-        dispatch(delFile(file.uid))
-        return true
-    }
-    // 在文件上传之前
-    const beforeUpload = (file) => {
-        const availableMemory = user.availableMemory
-        if (file.size > availableMemory) {
-
-            dispatch(openWarningNotification('剩余空间不足，请删除部分文件再试'))
-            throw new Error('剩余空间不足，请删除部分文件再试');
-        }
-        const file_ = getFile(file.uid)
-        if (!file_) {
-            dispatch(openWarningNotification('MD5未计算完毕'))
-            throw new Error('MD5未计算完毕');
-        } else {
-            const uploadData_ = {
-                lastModifiedDate: file_.lastModifiedDate,
-                md5Hex: file_.md5Hex,
-                parentId: filters.parentId
-            }
-            setUploadData(uploadData_)
-        }
-        if (file_.isExist) {
-            // 服务器已经存在该文件
-            UploadMD5(file_).then(res => {
-                dispatch(openSuccessNotification(`${file.name}上传成功！`))
-                GetInfo().then(res => {
-                    dispatch(setUserInfo(res.data))
-                })
-                let flag = true
-                uploadFileList.forEach(item => {
-                    if (item.percentage !== 100) {
-                        flag = false
-                    }
-                })
-                if (flag) {
-                    setUploadProgressOpen(false)
-                }
-                reLoad(filters)
-            }).catch(res => {
-            })
-            throw new Error('服务器已经存在该文件');
-            // return false
-        } else {
-            // 服务器不存在该文件，需要上传
-            return true
-        }
-    }
-    const handleProgress = (event, file, fileList) => {
-
-        setUploadProgressOpen(true)
-        const file_ = Object.assign({}, file)
-        file_.percentage = event.percent
-        const fileList_ = Object.assign([], fileList)
-        fileList_.splice(fileList.indexOf(file), 1, file_)
-        setUploadFileList(fileList_)
-    }
-    const [uploadProgressOpen, setUploadProgressOpen] = React.useState(false)
-    const [uploadFileList, setUploadFileList] = React.useState([])
     // 分页页码改变
     const handleChangePage = (event, newPage) => {
         if (newPage === pagination.pageNum) {
@@ -461,30 +318,103 @@ const Home = () => {
         }).catch(res => {
         })
     }
+    const uploadRef = React.useRef(null)
+    // 选择文件上传
+    const selectUploadFile = () => {
+        uploadRef.current.uploadInnerRef.current.handleClick()
+        setContextMenuOpen(false)
+    }
+    const [selectFile, setSelectFile] = React.useState({
+        isDir: 0
+    })
+    const handleFileContextMenu = (e, file) => {
+        e.stopPropagation()
+        e.preventDefault()
+        setSelectFile(file)
+        if (contextMenuOpen || fileContextMenuOpen) {
+            return
+        }
+        setFileContextMenuPosition({
+            mouseX: e.clientX,
+            mouseY: e.clientY
+        })
+        setFileContextMenuOpen(true)
+    }
+    const [fileContextMenuOpen, setFileContextMenuOpen] = React.useState(false)
+    const handleFileContextMenuClose = () => {
+        setFileContextMenuOpen(false)
+        setFileContextMenuPosition({
+            mouseX: null,
+            mouseY: null
+        })
+    }
+    const [fileContextMenuPosition, setFileContextMenuPosition] = React.useState({
+        mouseX: null,
+        mouseY: null
+    })
+    const handleOpenDir = () => {
+        setFileContextMenuOpen(false)
+        handleFileDoubleClick(selectFile)
+    }
+    const handleOpenFile = () => {
+        setFileContextMenuOpen(false)
+        handleFileDoubleClick(selectFile)
+    }
+    const handleDelFile = () => {
+        setFileContextMenuOpen(false)
+        setDelFileDialogOpen(true)
+    }
+    const handleDownloadFile = () => {
+        setFileContextMenuOpen(false)
+        const uri = `${AppConf.baseUrl()}/file/downLoad?fileKey=${selectFile.key}&X-Token=${getToken()}`
+        window.open(uri, '_blank')
+    }
+    const handleMoveFile = () => {
+        setFileContextMenuOpen(false)
+        setMoveFileDialogOpen(true)
+    }
+    const [delFileDialogOpen, setDelFileDialogOpen] = React.useState(false)
+    const handleDelFileDialogClose = () => {
+        setDelFileDialogOpen(false)
+    }
+    const handleDelFileConfirm = () => {
+        setDelFileDialogOpen(false)
+        DeleteFile({ fileKey: selectFile.key }).then(res => {
+            dispatch(openSuccessNotification(`删除成功！`))
+            reLoad(filters)
+            GetInfo().then(res => {
+                dispatch(setUserInfo(res.data))
+            })
+        })
+    }
+    const [moveFileDialogOpen, setMoveFileDialogOpen] = React.useState(false)
     return (
         <div className={classes.root}>
             <TextFieldDialog
                 open={mkdirDialogOpen}
                 onClose={handleMkdirDialogClose}
                 onConfirm={handleMkdirConfirm}
-                title={'新建文件夹'}
+                title={'删除文件'}
                 contentText={''}/>
+            <ConfirmDialog open={delFileDialogOpen} title={'提示'} onClose={handleDelFileDialogClose} onConfirm={handleDelFileConfirm} >你确认删除该文件吗?</ConfirmDialog>
+            {
+                moveFileDialogOpen && (
+                    <MoveFileDialog
+                        moveFileDialogOpen={moveFileDialogOpen}
+                        setMoveFileDialogOpen={flag => {
+                            setMoveFileDialogOpen(flag)
+                        }}
+                        selectFile={selectFile}
+                        onReLoad={() => {
+                            reLoad(filters)
+                        }}
+                    />
+                )
+            }
             <Navbar>
-                <Upload
-                    className={classes.uploadComponent}
-                    data={uploadData}
-                    withCredentials={true}
-                    action={uploadAction}
-                    onChange={changeHandle}
-                    onSuccess={handleUploadSuccess}
-                    autoUpload={false}
-                    ref={uploadRef}
-                    showFileList={false}
-                    beforeUpload={beforeUpload}
-                    beforeRemove={beforeRemove}
-                    onProgress={handleProgress}
-                    multiple={true}
-                />
+                <UploadWithBusiness ref={uploadRef} onReLoad={() => {
+                    reLoad(filters)
+                }} filters={filters} />
                 <div className={classes.breadcrumb}>
                     <FileBreadcrumbs pathStore={pathStore} onClick={jump} onReLoad={handleReLoad}/>
                 </div>
@@ -495,8 +425,20 @@ const Home = () => {
                         onClose={onContextMenuClose}
                         mouseX={contextMenuPosition.mouseX}
                         mouseY={contextMenuPosition.mouseY}
-                        onUpload={selectFile}
+                        onUpload={selectUploadFile}
                         onMkdir={handleMkdir}
+                    />
+                    <FileContextMenu
+                        file={selectFile}
+                        open={fileContextMenuOpen}
+                        onClose={handleFileContextMenuClose}
+                        mouseX={fileContextMenuPosition.mouseX}
+                        mouseY={fileContextMenuPosition.mouseY}
+                        onOpenDir={handleOpenDir}
+                        onOpenFile={handleOpenFile}
+                        onDelFile={handleDelFile}
+                        onDownloadFile={handleDownloadFile}
+                        onMoveFile={handleMoveFile}
                     />
                     <Scrollbars onScrollFrame={handleScrollFrame} autoHide>
                         <FileList
@@ -512,9 +454,8 @@ const Home = () => {
                                 handleFileClick(file)
                             }} onFileDoubleClick={file => {
                             handleFileDoubleClick(file)
-                        }} setReload={setReload} finished={finished}/>
+                        }} setReload={setReload} finished={finished} onFileContextMenu={handleFileContextMenu}/>
                     </Scrollbars>
-                    <UploadProgress open={uploadProgressOpen} uploadFileList={uploadFileList}/>
                 </div>
             </Navbar>
         </div>

@@ -31,7 +31,6 @@ const ContextMenu = (props) => {
 
     return (
         <StyledMenu
-            id="context-menu"
             keepMounted
             open={props.open}
             onClose={handleClose}

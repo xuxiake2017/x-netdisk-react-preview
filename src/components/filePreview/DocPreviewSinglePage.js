@@ -76,12 +76,6 @@ const DocPreview = (props) => {
         page: currentNumPage,
         canvasRef,
         scale,
-        onPageLoadSuccess: () => {
-            dispatch(setPdfViewer({
-                ...pdfViewer,
-                numPages: pdfDocument.numPages,
-            }))
-        },
         onPageRenderSuccess: () => {
             const canvas = canvasRef.current
             const pageDiv = canvasOutRef.current
@@ -91,11 +85,14 @@ const DocPreview = (props) => {
 
     React.useEffect(() => {
         dispatch(drawerToggleAction(false))
-        dispatch(setPdfViewer({
-            ...pdfViewer,
-            isPreview: true,
-            fileName: props.file.fileName
-        }))
+        if (pdfDocument) {
+            dispatch(setPdfViewer({
+                ...pdfViewer,
+                isPreview: true,
+                fileName: props.file.fileName,
+                numPages: pdfDocument.numPages,
+            }))
+        }
         return () => {
             dispatch(setPdfViewer({
                 isPreview: false,
@@ -105,8 +102,11 @@ const DocPreview = (props) => {
                 currentNumPage: 1,
                 scrollTop: 0
             }))
+            if (pdfDocument) {
+                pdfDocument.cleanup()
+            }
         }
-    }, [])
+    }, [pdfDocument])
 
     const [toolBarVisiable, setToolBarVisiable] = useState(false)
     const [opacity, setOpacity] = useState(8)

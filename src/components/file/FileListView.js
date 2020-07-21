@@ -115,6 +115,8 @@ const FileListView = (props) => {
                                     handleClick(row)
                                 }} onDoubleClick={() => {
                                     handleDoubleClick(row)
+                                }} onContextMenu={(e) => {
+                                    props.onContextMenu(e, row)
                                 }}>
                                     {columns.map((column) => {
                                         const value = row[column.id];
@@ -192,6 +194,7 @@ FileListView.propTypes = {
     page: PropTypes.number,
     onChangePage: PropTypes.func,
     onChangeRowsPerPage: PropTypes.func,
+    onContextMenu: PropTypes.func,
 }
 
 export default FileListView

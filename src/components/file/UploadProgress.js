@@ -17,7 +17,7 @@ const BorderLinearProgress = withStyles({
     },
 })(LinearProgress);
 
-const useStyles = makeStyles(() => (
+const useStyles = makeStyles((theme) => (
     {
         paper: {
             position: "absolute",
@@ -28,7 +28,8 @@ const useStyles = makeStyles(() => (
             minHeight: 100,
             '& * + *': {
                 paddingTop: 5
-            }
+            },
+            zIndex: theme.zIndex.drawer + 1,
         },
         container: {
             width: '100%',
