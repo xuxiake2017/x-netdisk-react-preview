@@ -33,6 +33,8 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 #### 2020.07.15
 - 整理文件夹，将组件归类
 - 更改路由为HashRouter（服务器需要部署多个web）
+#### 2020.07.21
+- 分离上传组件业务，增加文件移动、上传、下载
 ## 持续更新ing
 
 
