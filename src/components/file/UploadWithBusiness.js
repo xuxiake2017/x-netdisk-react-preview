@@ -30,7 +30,7 @@ const uploadAction = `${AppConf.baseUrl()}/file/fileUpload`
 /*
 * 上传组件（包含具体的业务）
 * */
-const UploadWithBusiness = React.forwardRef((props, ref) => {
+const UploadWithBusiness = (props, ref) => {
 
     const dispatch = useDispatch()
     const classes = useStyles()
@@ -49,6 +49,8 @@ const UploadWithBusiness = React.forwardRef((props, ref) => {
     })
     const [uploadProgressOpen, setUploadProgressOpen] = React.useState(false)
     const [uploadFileList, setUploadFileList] = React.useState([])
+    // fileListRef为空后，重新加载文件列表
+    const fileListRef = React.useRef([])
 
     const getFile = (uid) => {
         return filesInStore.find(file => file.uid === uid)
@@ -76,6 +78,7 @@ const UploadWithBusiness = React.forwardRef((props, ref) => {
                         isExist = false
                     }
                     dispatch(storeFile({...fileInfo, isExist, parentId: props.filters.parentId}))
+                    fileListRef.current.push({...fileInfo, isExist, parentId: props.filters.parentId})
                     startUpload(file.uid)
                 }).catch(res => {
                     console.log(res)
@@ -91,10 +94,13 @@ const UploadWithBusiness = React.forwardRef((props, ref) => {
         } else {
             dispatch(openSuccessNotification(`${file.name}上传成功！`))
             // reLoad(filters)
-            props.onReLoad()
-            GetInfo().then(res => {
-                dispatch(setUserInfo(res.data))
-            })
+            fileListRef.current.splice(fileListRef.current.indexOf(file), 1)
+            if (fileListRef.current.length === 0) {
+                props.onReLoad()
+                GetInfo().then(res => {
+                    dispatch(setUserInfo(res.data))
+                })
+            }
         }
         let flag = true
         uploadFileList.forEach(item => {
@@ -135,9 +141,6 @@ const UploadWithBusiness = React.forwardRef((props, ref) => {
             // 服务器已经存在该文件
             UploadMD5(file_).then(res => {
                 dispatch(openSuccessNotification(`${file.name}上传成功！`))
-                GetInfo().then(res => {
-                    dispatch(setUserInfo(res.data))
-                })
                 let flag = true
                 uploadFileList.forEach(item => {
                     if (item.percentage !== 100) {
@@ -147,7 +150,13 @@ const UploadWithBusiness = React.forwardRef((props, ref) => {
                 if (flag) {
                     setUploadProgressOpen(false)
                 }
-                props.onReLoad()
+                fileListRef.current.splice(fileListRef.current.indexOf(file), 1)
+                if (fileListRef.current.length === 0) {
+                    props.onReLoad()
+                    GetInfo().then(res => {
+                        dispatch(setUserInfo(res.data))
+                    })
+                }
             }).catch(res => {
             })
             throw new Error('服务器已经存在该文件');
@@ -192,11 +201,11 @@ const UploadWithBusiness = React.forwardRef((props, ref) => {
             <UploadProgress open={uploadProgressOpen} uploadFileList={uploadFileList}/>
         </React.Fragment>
     )
-})
+}
 
 UploadWithBusiness.propTypes = {
     onReLoad: PropTypes.func,
     filters: PropTypes.object
 }
 
-export default UploadWithBusiness
+export default React.forwardRef(UploadWithBusiness)
