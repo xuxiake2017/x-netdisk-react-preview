@@ -94,10 +94,11 @@ const LoginForm = () => {
         password: '',
         captcha: ''
     });
-    const [captchaSrc, setCaptchaSrc] = React.useState(`${AppConf.baseUrl()}/user/createImg?${new Date().getTime()}`);
+    const [captchaSrc, setCaptchaSrc] = React.useState('');
     const [showPassword, setShowPassword] = React.useState(false);
     React.useEffect(() => {
         dispatch(drawerToggleAction(false))
+        setCaptchaSrc(createImg())
     }, [])
 
     const changeHandler = (event) => {
@@ -108,7 +109,14 @@ const LoginForm = () => {
         })
     }
     const changeCaptcha = () => {
-        setCaptchaSrc(`${AppConf.baseUrl()}/user/createImg?${new Date().getTime()}`)
+        setCaptchaSrc(createImg())
+    }
+    const createImg = () => {
+        if (process.env.NODE_ENV === 'development') {
+            return `/netdisk/user/createImg?${new Date().getTime()}`
+        } else if (process.env.NODE_ENV === 'production') {
+            return `${AppConf.baseUrl()}/user/createImg?${new Date().getTime()}`
+        }
     }
     const loginHandler = () => {
         const params = {
