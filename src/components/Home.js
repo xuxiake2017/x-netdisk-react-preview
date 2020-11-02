@@ -261,35 +261,39 @@ const Home = () => {
         })
         setPagination(pagination_)
     }
-    // 滚动事件处理（滚动加载）
-    const handleScrollFrame = ({ clientHeight,
-                                   clientWidth,
-                                   left,
-                                   scrollHeight,
-                                   scrollLeft,
-                                   scrollTop,
-                                   scrollWidth,
-                                   top }) => {
-        if (scrollHeight - (scrollTop + clientHeight) < 100) {
-            if (pagination.pageNum * pagination.pageSize > (fileList.length + dirList.length)) {
-                setFinished(true)
-                return;
+    // 滚动事件处理（滚动加载）（加入防抖）
+    const handleScrollFrame = (function (wait = 50) {
+        console.log('handleScrollFrame外包裹函数')
+        let timer = null
+        return ({ clientHeight, scrollHeight, scrollTop }) => {
+            console.log(clientHeight)
+            if (timer !== null) {
+                clearTimeout(timer)
             }
-            if (loading) {
-                return
-            }
-            console.log('翻页')
-            const pagination_ = {
-                ...pagination,
-                pageNum: pagination.pageNum + 1
-            }
-            getFileList({
-                ...pagination_,
-                ...filters
-            })
-            setPagination(pagination_)
+            timer = setTimeout(() => {
+                console.log('handleScrollFrame执行了')
+                if (scrollHeight - (scrollTop + clientHeight) < 100) {
+                    if (pagination.pageNum * pagination.pageSize > (fileList.length + dirList.length)) {
+                        setFinished(true)
+                        return;
+                    }
+                    if (loading) {
+                        return
+                    }
+                    console.log('翻页')
+                    const pagination_ = {
+                        ...pagination,
+                        pageNum: pagination.pageNum + 1
+                    }
+                    getFileList({
+                        ...pagination_,
+                        ...filters
+                    })
+                    setPagination(pagination_)
+                }
+            }, wait)
         }
-    }
+    }(50))
     const setReload = (flag) => {
         // reloadFlag = flag
         // setReloadFlag(flag)
@@ -394,7 +398,7 @@ const Home = () => {
                 open={mkdirDialogOpen}
                 onClose={handleMkdirDialogClose}
                 onConfirm={handleMkdirConfirm}
-                title={'删除文件'}
+                title={'新建文件夹'}
                 contentText={''}/>
             <ConfirmDialog open={delFileDialogOpen} title={'提示'} onClose={handleDelFileDialogClose} onConfirm={handleDelFileConfirm} >你确认删除该文件吗?</ConfirmDialog>
             {
