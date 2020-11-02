@@ -30,7 +30,7 @@ const uploadAction = `${AppConf.baseUrl()}/file/fileUpload`
 /*
 * 上传组件（包含具体的业务）
 * */
-const UploadWithBusiness = (props, ref) => {
+const UploadWithBusiness = React.forwardRef((props, ref) => {
 
     const dispatch = useDispatch()
     const classes = useStyles()
@@ -201,11 +201,13 @@ const UploadWithBusiness = (props, ref) => {
             <UploadProgress open={uploadProgressOpen} uploadFileList={uploadFileList}/>
         </React.Fragment>
     )
-}
+})
 
 UploadWithBusiness.propTypes = {
     onReLoad: PropTypes.func,
     filters: PropTypes.object
 }
 
-export default React.forwardRef(UploadWithBusiness)
+UploadWithBusiness.displayName = 'UploadWithBusiness'
+
+export default UploadWithBusiness
