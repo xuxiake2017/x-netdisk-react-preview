@@ -71,7 +71,7 @@ const DocPreview = (props) => {
 
     const canvasOutRef = useRef(null);
     const { pdfDocument, pdfPage } = usePdf({
-        workerSrc: `/static/pdfjs/2.2.228/pdf.worker.js`,
+        workerSrc: `https://cdn.jsdelivr.net/npm/pdfjs-dist@2.2.228/build/pdf.worker.min.js`,
         file: props.file.previewUrl,
         page: currentNumPage,
         canvasRef,

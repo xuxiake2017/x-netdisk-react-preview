@@ -13,3 +13,19 @@
     right: 0;
   }
 }
+.copyright-wrap {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 5px;
+  //height: 50px;
+  background: linear-gradient(to bottom, #323232 0%, #3F3F3F 40%, #1C1C1C 150%), linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(0,0,0,0.25) 200%);
+  color: #FFF;
+  text-align: center;
+}
+
+.copyright-item {
+  height: 20px;
+  line-height: 20px;
+}

@@ -67,7 +67,7 @@ const Home = () => {
         total: 0,
         pages: 0,
         pageNum: 1,
-        pageSize: 20
+        pageSize: 30
     })
 
     // 加载状态标记
@@ -151,11 +151,9 @@ const Home = () => {
     }
     // 文件单击
     const handleFileClick = (file) => {
-        // console.log('handleFileClick', file)
     }
     // 文件双击
     const handleFileDoubleClick = (file) => {
-        // console.log('handleFileDoubleClick', file)
         if (file.isDir === 0) {
             const filters_ = {
                 ...filters,
@@ -263,15 +261,12 @@ const Home = () => {
     }
     // 滚动事件处理（滚动加载）（加入防抖）
     const handleScrollFrame = (function (wait = 50) {
-        console.log('handleScrollFrame外包裹函数')
         let timer = null
         return ({ clientHeight, scrollHeight, scrollTop }) => {
-            console.log(clientHeight)
             if (timer !== null) {
                 clearTimeout(timer)
             }
             timer = setTimeout(() => {
-                console.log('handleScrollFrame执行了')
                 if (scrollHeight - (scrollTop + clientHeight) < 100) {
                     if (pagination.pageNum * pagination.pageSize > (fileList.length + dirList.length)) {
                         setFinished(true)
@@ -280,7 +275,6 @@ const Home = () => {
                     if (loading) {
                         return
                     }
-                    console.log('翻页')
                     const pagination_ = {
                         ...pagination,
                         pageNum: pagination.pageNum + 1
@@ -325,7 +319,9 @@ const Home = () => {
     const uploadRef = React.useRef(null)
     // 选择文件上传
     const selectUploadFile = () => {
-        uploadRef.current.uploadInnerRef.current.handleClick()
+        // uploadRef.current.uploadInnerRef.current.handleClick()
+        uploadRef.current.value = null
+        uploadRef.current.click();
         setContextMenuOpen(false)
     }
     const [selectFile, setSelectFile] = React.useState({

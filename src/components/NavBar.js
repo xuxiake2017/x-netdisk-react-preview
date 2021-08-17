@@ -130,7 +130,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const drawerWidth = 240;
-const APP_NAME = 'X-NetDisk';
+const APP_NAME = '我的照片墙';
 
 export default function PersistentDrawerLeft(props) {
 

@@ -16,6 +16,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import { useDispatch } from "react-redux";
 import { openSuccessNotification, setUserInfo, drawerToggleAction } from "../../actions";
 import { setToken } from "../../utils/auth";
+const beiantubiao = require('../../assets/beiantubiao.png');
 
 const useStyles = makeStyles(theme => (
     {
@@ -84,6 +85,7 @@ const useStyles = makeStyles(theme => (
         }
     }
 ))
+const currentYear = new Date().getFullYear()
 const LoginForm = () => {
 
     const classes = useStyles()
@@ -190,6 +192,22 @@ const LoginForm = () => {
                         </Button>
                     </Grid>
                 </Grid>
+                <div className={LoginFormStyles['copyright-wrap']}>
+                    <div>
+                        &copy;2021-{ currentYear } 徐霞客 | Powered by Material-UI
+                    </div>
+                    <div className={LoginFormStyles['copyright-item']}>
+                        粤ICP备2021017315号-1
+                        <a
+                            target="_blank"
+                            href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=44030502007101"
+                            style={{ color: '#FFF', marginLeft: '10px' }}
+                        >
+                            <img src={beiantubiao} style={{ verticalAlign: 'middle' }} />
+                            粤公网安备 44030502007101号
+                        </a>
+                    </div>
+                </div>
             </div>
         </React.Fragment>
     )
