@@ -1,68 +1,21 @@
 import PropTypes from 'prop-types'
 import React from "react";
 import Upload from "./Upload";
-import UploadList from "./UploadList";
 
 function noop() {}
 
-class UploadContainer extends React.Component {
+const UploadContainer = React.forwardRef((props, ref) => {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            uploadFiles: [],
-            dragOver: false,
-            draging: false,
-            uploadDisabled: props.disabled
-        }
-        this.uploadInnerRef = React.createRef(null)
-        this.tempIndex = 1
+    const uploadFiles = React.useRef([])
+    const setUploadFiles = (val) => {
+        uploadFiles.current = val
     }
+    const tempIndex = React.useRef(1)
 
-    componentDidMount() {
-
-        if (this.props.type === 'picture-card' || this.props.type === 'picture') {
-            this.setState({
-                ...this.state,
-                uploadFiles: this.state.uploadFiles.map(file => {
-                    if (!file.url && file.raw) {
-                        try {
-                            file.url = URL.createObjectURL(file.raw);
-                        } catch (err) {
-                            console.error('[Upload]', err);
-                        }
-                    }
-                    return file;
-                })
-            })
-        }
-        this.setState({
-            ...this.state,
-            uploadFiles: this.props.fileList.map(item => {
-                if (item.uid) {
-                    item.uid = item.uid
-                } else {
-                    item.uid = Date.now() + (this.tempIndex++)
-                }
-                item.status = item.status || 'success';
-                return item;
-            })
-        })
-    }
-
-    componentWillUnmount() {
-        this.state.uploadFiles.forEach(file => {
-            if (file.url && file.url.indexOf('blob:') === 0) {
-                URL.revokeObjectURL(file.url);
-            }
-        });
-    }
-
-    handleStart(rawFiles) {
-
+    const handleStart = (rawFiles) => {
         const files = []
         rawFiles.forEach(rawFile => {
-            rawFile.uid = Date.now() + (this.tempIndex++);
+            rawFile.uid = Date.now() + (tempIndex.current++);
             let file = {
                 status: 'ready',
                 name: rawFile.name,
@@ -71,92 +24,58 @@ class UploadContainer extends React.Component {
                 uid: rawFile.uid,
                 raw: rawFile
             };
-
-            if (this.props.listType === 'picture-card' || this.props.listType === 'picture') {
-                try {
-                    file.url = URL.createObjectURL(rawFile);
-                } catch (err) {
-                    console.error('[Element Error][Upload]', err);
-                    return;
-                }
-            }
             files.push(file)
-            this.props.onChange(file, this.state.uploadFiles);
+            props.onChange(file, uploadFiles.current);
         })
-
-
-        this.setState((prevState, props) => {
-            return {
-                ...prevState,
-                uploadFiles: files
-            }
-        })
+        setUploadFiles(files)
     }
-    handleProgress(ev, rawFile) {
-        const file = this.getFile(rawFile);
-        this.props.onProgress(ev, file, this.state.uploadFiles);
+    const handleProgress = (ev, rawFile) => {
+        const file = getFile(rawFile);
+        file.status = 'uploading';
+        file.percentage = ev.percent || 0;
+        const uploadFiles_ = [ ...uploadFiles.current ]
+        uploadFiles_.splice(uploadFiles_.indexOf(file), 1, file);
+        setUploadFiles(uploadFiles_)
+        props.onProgress(ev, file, uploadFiles.current);
+    }
+    const handleSuccess = (res, rawFile) => {
+        const file = getFile(rawFile);
+
         const file_ = Object.assign({}, file)
-        file_.status = 'uploading';
-        file_.percentage = ev.percent || 0;
-        const fileList = Object.assign([], this.state.uploadFiles)
-        fileList.splice(fileList.indexOf(file), 1, file_);
-        this.setState({
-            ...this.state,
-            uploadFiles: fileList
-        })
+        file_.status = 'success';
+        file_.response = res;
+        const uploadFiles_ = [ ...uploadFiles.current ]
+        uploadFiles_.splice(uploadFiles_.indexOf(file), 1, file_);
+        setUploadFiles(uploadFiles_)
+
+        props.onSuccess(res, file, uploadFiles_);
+        props.onChange(file, uploadFiles_);
     }
-    handleSuccess(res, rawFile) {
-        const file = this.getFile(rawFile);
-
-        if (file) {
-            const file_ = Object.assign({}, file)
-            file_.status = 'success';
-            file_.response = res;
-            const fileList = Object.assign([], this.state.uploadFiles)
-            fileList.splice(fileList.indexOf(file), 1, file_);
-            this.setState({
-                ...this.state,
-                uploadFiles: fileList
-            })
-
-            this.props.onSuccess(res, file, this.state.uploadFiles);
-            this.props.onChange(file, this.state.uploadFiles);
-        }
-    }
-    handleError(err, rawFile) {
-        const file = this.getFile(rawFile);
-
+    const handleError = (err, rawFile) => {
+        const file = getFile(rawFile);
         file.status = 'fail';
+        const uploadFiles_ = [ ...uploadFiles.current ]
+        uploadFiles_.splice(uploadFiles_.indexOf(file), 1);
+        setUploadFiles(uploadFiles_)
 
-        const fileList = Object.assign([], this.state.uploadFiles)
-        fileList.splice(fileList.indexOf(file), 1);
-        this.setState({
-            ...this.state,
-            uploadFiles: fileList
-        })
-
-        this.props.onError(err, file, this.state.uploadFiles);
-        this.props.onChange(file, this.state.uploadFiles);
+        props.onError(err, file, uploadFiles_);
+        props.onChange(file, uploadFiles_);
     }
-    handleRemove(file, raw) {
+    const handleRemove = (file, raw) => {
         if (raw) {
-            file = this.getFile(raw);
+            file = getFile(raw);
         }
         let doRemove = () => {
-            this.abort(file);
-            let fileList = Object.assign([], this.state.uploadFiles);
-            fileList.splice(fileList.indexOf(file), 1);
-            this.setState({
-                ...this.state,
-                uploadFiles: fileList
-            })
-            this.props.onRemove(file, fileList);
+            const uploadFiles_ = [ ...uploadFiles.current ]
+            uploadFiles_.splice(uploadFiles_.indexOf(file), 1);
+            setUploadFiles(uploadFiles_)
+            props.onRemove(file, uploadFiles_);
         };
 
-        if (!this.props.beforeRemove) {
+        if (!props.beforeRemove) {
             doRemove();
-        } else if (typeof this.props.beforeRemove === 'function') {
-            const before = this.props.beforeRemove(file, this.state.uploadFiles);
+        } else if (typeof props.beforeRemove === 'function') {
+            const before = props.beforeRemove(file, uploadFiles.current);
             if (before && before.then) {
                 before.then(() => {
                     doRemove();
@@ -166,8 +85,8 @@ class UploadContainer extends React.Component {
             }
         }
     }
-    getFile(rawFile) {
-        let fileList = this.state.uploadFiles;
+    const getFile = (rawFile) => {
+        let fileList = uploadFiles.current;
         let target;
         fileList.every(item => {
             target = rawFile.uid === item.uid ? item : null;
@@ -175,132 +94,53 @@ class UploadContainer extends React.Component {
         });
         return target;
     }
-    abort(file) {
-        this.uploadInnerRef.current.abort(file);
-    }
-    clearFiles() {
-        this.setState({
-            ...this.state,
-            uploadFiles: []
-        })
-    }
-    submit(uid) {
-        if (uid) {
-            this.state.uploadFiles
-                .filter(file => file.status === 'ready' && file.uid === uid)
-                .forEach(file => {
-                    this.uploadInnerRef.current.upload(file.raw);
-                });
-        } else {
-            this.state.uploadFiles
-                .filter(file => file.status === 'ready')
-                .forEach(file => {
-                    this.uploadInnerRef.current.upload(file.raw);
-                });
-        }
 
-    }
-
-    render() {
-
-        let uploadList;
-
-        if (this.props.showFileList) {
-            uploadList = (
-                <UploadList
-                    disabled={this.state.uploadDisabled}
-                    listType={this.props.listType}
-                    files={this.state.uploadFiles}
-                    onRemove={() => {
-                        this.handleRemove()
-                    }}
-                    handlePreview={() => {
-                        this.props.onPreview()
-                    }}>
-                </UploadList>
-            );
-        }
-
-        const uploadData = {
-            props: {
-                type: this.props.type,
-                drag: this.props.drag,
-                action: this.props.action,
-                multiple: this.props.multiple,
-                beforeUpload: this.props.beforeUpload,
-                withCredentials: this.props.withCredentials,
-                headers: this.props.headers,
-                name: this.props.name,
-                data: this.props.data,
-                accept: this.props.accept,
-                fileList: this.state.uploadFiles,
-                autoUpload: this.props.autoUpload,
-                listType: this.props.listType,
-                disabled: this.state.uploadDisabled,
-                limit: this.props.limit,
-                onExceed: this.props.onExceed,
-                onStart: (rawFile) => {
-                    this.handleStart(rawFile)
-                },
-                onProgress: (ev, rawFile) => {
-                    this.handleProgress(ev, rawFile)
-                },
-                onSuccess: (res, rawFile) => {
-                    this.handleSuccess(res, rawFile)
-                },
-                onError: (err, rawFile) => {
-                    this.handleError(err, rawFile)
-                },
-                onPreview: this.props.onPreview,
-                onRemove: (file, raw) => {
-                    this.handleRemove(file, raw)
-                },
-                httpRequest: this.props.httpRequest
+    const uploadData = {
+        props: {
+            action: props.action,
+            multiple: props.multiple,
+            beforeUpload: props.beforeUpload,
+            withCredentials: props.withCredentials,
+            headers: props.headers,
+            name: props.name,
+            data: props.data,
+            accept: props.accept,
+            limit: props.limit,
+            onExceed: props.onExceed,
+            onStart: (rawFile) => {
+                handleStart(rawFile)
             },
-            ref: this.uploadInnerRef
-        };
+            onProgress: (ev, rawFile) => {
+                handleProgress(ev, rawFile)
+            },
+            onSuccess: (res, rawFile) => {
+                handleSuccess(res, rawFile)
+            },
+            onError: (err, rawFile) => {
+                handleError(err, rawFile)
+            },
+            onRemove: (file, raw) => {
+                handleRemove(file, raw)
+            },
+        },
+        ref
+    };
 
-        const trigger = this.props.trigger || this.props.children;
-        const uploadComponent = (
-            <Upload {...uploadData.props} ref={uploadData.ref}>{trigger}</Upload>
-        )
-
-        return (
-            <div className={this.props.className}>
-                {
-                    this.props.listType === 'picture-card' && (
-                        uploadList
-                    )
-                }
-                {
-                    this.props.trigger ? [{...uploadComponent, key: 'upload'}, {...this.props.children, key: 'children'}] : uploadComponent
-                }
-                {this.props.tip}
-                {
-                    this.props.listType !== 'picture-card' && (
-                        uploadList
-                    )
-                }
-            </div>
-        )
-    }
-}
+    return (
+        <div className={props.className}>
+            <Upload {...uploadData.props} ref={uploadData.ref}></Upload>
+        </div>
+    )
+})
 
 UploadContainer.defaultProps = {
     headers: {},
     name: 'file',
-    showFileList: true,
-    type: 'select',
-    onRemove: noop,
     onChange: noop,
-    onPreview: noop,
+    onRemove: noop,
     onSuccess: noop,
     onProgress: noop,
     onError: noop,
-    fileList: [],
-    autoUpload: true,
-    listType: 'text',
-    disabled: false,
     onExceed: noop,
 }
 
@@ -310,30 +150,15 @@ UploadContainer.propTypes = {
     data: PropTypes.object,
     multiple: PropTypes.bool,
     name: PropTypes.string,
-    drag: PropTypes.bool,
-    dragger: PropTypes.bool,
     withCredentials: PropTypes.bool,
-    showFileList: PropTypes.bool,
     accept: PropTypes.string,
-    type: PropTypes.string,
     beforeUpload: PropTypes.func,
     beforeRemove: PropTypes.func,
-    onRemove: PropTypes.func,
     onChange: PropTypes.func,
-    onPreview: PropTypes.func,
     onSuccess: PropTypes.func,
     onProgress: PropTypes.func,
     onError: PropTypes.func,
-    fileList: PropTypes.array,
-    autoUpload: PropTypes.bool,
-    // text,picture,picture-card
-    listType: PropTypes.string,
-    httpRequest: PropTypes.func,
-    disabled: PropTypes.bool,
     limit: PropTypes.number,
-    onExceed: PropTypes.func,
-    trigger: PropTypes.node,
-    tip: PropTypes.node,
     className: PropTypes.string
 }
 

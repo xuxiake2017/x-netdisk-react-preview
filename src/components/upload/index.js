@@ -1,4 +1,3 @@
-import Upload from './src';
-import './index.css'
+import Upload from './src/index';
 
 export default Upload;
