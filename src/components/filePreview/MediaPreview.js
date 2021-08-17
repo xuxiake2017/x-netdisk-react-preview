@@ -79,6 +79,7 @@ const MediaPreview = (props) => {
                     || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_TXT
                     || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_PDF) {
                     setIsDocPreview(true)
+                    window.open(`/pdf-viewer/web/viewer.html?file=${data.fileOrigin.previewUrl}`, '_blank')
                 }
             })
         }
@@ -119,14 +120,14 @@ const MediaPreview = (props) => {
                         </div>
                     )
                 }
-                {
+                {/* {
                     mediaFile && isDocPreview && (
                         <DocPreview file={{
                             previewUrl: mediaFile.fileOrigin.previewUrl,
                             fileName: mediaFile.fileName
                         }}/>
                     )
-                }
+                } */}
             </NavBar>
         </React.Fragment>
     )
