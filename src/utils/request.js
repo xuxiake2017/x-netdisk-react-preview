@@ -45,7 +45,7 @@ service.interceptors.response.use(
                 message: response.data.msg
             }))
             // 登录过期
-            if (res.code === 20016) {
+            if (res.code === 41000) {
                 removeToken()
                 window.setInterval(() => {
                     window.location.reload()
