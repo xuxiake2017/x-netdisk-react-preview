@@ -18,6 +18,19 @@ const FILE_TYPE = {
     'USER_STATUS_NOT_VERIFY': 9
 }
 
+// 按类型浏览的分类，地址格式：/home?type=image
+export const FILE_CATEGORIES = [
+    { type: 'image', name: '图片' },
+    { type: 'video', name: '视频' },
+    { type: 'music', name: '音乐' },
+    { type: 'document', name: '文档' }
+]
+
+export function getFileCategory(search) {
+    const type = new URLSearchParams(search).get('type')
+    return FILE_CATEGORIES.find(item => item.type === type)
+}
+
 export function fileIcoFilter(fileType) {
     switch (fileType) {
         case FILE_TYPE.FILE_TYPE_OF_TXT :

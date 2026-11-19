@@ -10,6 +10,38 @@ export const GetFileList = params => {
     })
 }
 
+export const GetPicList = params => {
+    return request({
+        url: '/file/getPicList',
+        method: 'post',
+        data: qs.stringify(params)
+    })
+}
+
+export const GetVideoList = params => {
+    return request({
+        url: '/file/getVideoList',
+        method: 'post',
+        data: qs.stringify(params)
+    })
+}
+
+export const GetAudioList = params => {
+    return request({
+        url: '/file/getAudioList',
+        method: 'post',
+        data: qs.stringify(params)
+    })
+}
+
+export const GetDocumentList = params => {
+    return request({
+        url: '/file/getDocumentList',
+        method: 'post',
+        data: qs.stringify(params)
+    })
+}
+
 export const CheckMd5 = params => {
     return request({
         url: '/file/checkMd5',

@@ -25,7 +25,9 @@ import {
 import {AccountArrowRight, AccountPlus} from "mdi-material-ui";
 import {
     useHistory,
+    useLocation,
 } from "react-router-dom";
+import { FILE_CATEGORIES, getFileCategory } from "../utils/FileUtils";
 import { useSelector, useDispatch } from "react-redux";
 import { drawerToggleAction, setPaletteThemeType, openSuccessNotification } from '../actions'
 import {
@@ -136,6 +138,12 @@ const useStyles = makeStyles((theme) => ({
 
 const drawerWidth = 240;
 const APP_NAME = 'X-NetDisk';
+const CATEGORY_ICONS = {
+    image: ImageIcon,
+    video: OndemandVideoIcon,
+    music: MusicVideoIcon,
+    document: DescriptionIcon
+}
 
 export default function PersistentDrawerLeft(props) {
 
@@ -145,11 +153,19 @@ export default function PersistentDrawerLeft(props) {
     const clientHeight = useSelector(state => {
         return state.appInfo.clientHeight
     })
-    const [collapseOpen, setCollapseOpen] = React.useState(false);
+    const history = useHistory()
+    const location = useLocation()
+    const activeCategory = location.pathname.startsWith('/home') ? getFileCategory(location.search) : undefined
+    const [collapseOpen, setCollapseOpen] = React.useState(Boolean(activeCategory));
+    // 通过浏览器前进后退进入分类页时，也要展开子菜单露出选中项
+    React.useEffect(() => {
+        if (activeCategory) {
+            setCollapseOpen(true)
+        }
+    }, [activeCategory])
     const classes = useStyles({ clientWidth, clientHeight });
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-    const history = useHistory()
 
     let drawerOpen = useSelector(state => {
         return state.appInfo.drawerOpen
@@ -163,7 +179,10 @@ export default function PersistentDrawerLeft(props) {
     );
     const toggleCollapseOpen = () => {
         history.push('/home')
-        setCollapseOpen(!collapseOpen)
+        // 从分类页回到全部文件时保持子菜单展开
+        if (!activeCategory) {
+            setCollapseOpen(!collapseOpen)
+        }
     }
 
     let themeType = useSelector(({ appInfo }) => {
@@ -439,30 +458,22 @@ export default function PersistentDrawerLeft(props) {
                             </ListItem>
                             <Collapse in={collapseOpen} timeout="auto">
                                 <List component="div" disablePadding className={classes.nested}>
-                                    <ListItem button>
-                                        <ListItemIcon>
-                                            <ImageIcon/>
-                                        </ListItemIcon>
-                                        <ListItemText primary="图片" />
-                                    </ListItem>
-                                    <ListItem button>
-                                        <ListItemIcon>
-                                            <OndemandVideoIcon/>
-                                        </ListItemIcon>
-                                        <ListItemText primary="视频" />
-                                    </ListItem>
-                                    <ListItem button>
-                                        <ListItemIcon>
-                                            <MusicVideoIcon/>
-                                        </ListItemIcon>
-                                        <ListItemText primary="音乐" />
-                                    </ListItem>
-                                    <ListItem button>
-                                        <ListItemIcon>
-                                            <DescriptionIcon/>
-                                        </ListItemIcon>
-                                        <ListItemText primary="文档" />
-                                    </ListItem>
+                                    {FILE_CATEGORIES.map(item => {
+                                        const CategoryIcon = CATEGORY_ICONS[item.type]
+                                        return (
+                                            <ListItem
+                                                button
+                                                key={item.type}
+                                                selected={Boolean(activeCategory) && activeCategory.type === item.type}
+                                                onClick={() => history.push(`/home?type=${item.type}`)}
+                                            >
+                                                <ListItemIcon>
+                                                    <CategoryIcon/>
+                                                </ListItemIcon>
+                                                <ListItemText primary={item.name} />
+                                            </ListItem>
+                                        )
+                                    })}
                                 </List>
                             </Collapse>
                             <ListItem

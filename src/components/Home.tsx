@@ -5,7 +5,15 @@ import { Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import FileList from "./file/FileList";
 import { useDispatch, useSelector } from "react-redux";
-import { GetFileList, MkDir, DeleteFile } from "../api/file";
+import {
+    GetFileList,
+    GetPicList,
+    GetVideoList,
+    GetAudioList,
+    GetDocumentList,
+    MkDir,
+    DeleteFile
+} from "../api/file";
 import FileBreadcrumbs from "./file/FileBreadcrumbs";
 import ContextMenu from "./file/ContextMenu";
 import {
@@ -15,7 +23,7 @@ import {
     drawerToggleAction
 } from "../actions";
 import { GetInfo } from "../api/user";
-import FILE_TYPE from "../utils/FileUtils";
+import FILE_TYPE, { getFileCategory } from "../utils/FileUtils";
 import { useHistory, useLocation } from "react-router";
 import { Scrollbars } from 'react-custom-scrollbars';
 import TextFieldDialog from "./common/TextFieldDialog";
@@ -51,6 +59,13 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const ROOT_DIR = { parentId: -1, fileRealName: '全部文件' }
+
+const CATEGORY_API = {
+    image: GetPicList,
+    video: GetVideoList,
+    music: GetAudioList,
+    document: GetDocumentList
+}
 
 // 地址格式：/home?path=12-文档/34-合同，每段为 "文件夹id-文件夹名"
 const parseDirPath = (search) => {
@@ -89,8 +104,12 @@ const Home = () => {
     const location = useLocation()
     const [fileList, setFileList] = React.useState([])
     const [dirList, setDirList] = React.useState([])
+    // 按类型浏览时不属于任何文件夹
+    const category = getFileCategory(location.search)
     // 储存文件树路径
-    const pathStore = React.useMemo(() => parseDirPath(location.search), [location.search])
+    const pathStore = React.useMemo(() => (
+        category ? [{ parentId: ROOT_DIR.parentId, fileRealName: category.name }] : parseDirPath(location.search)
+    ), [location.search])
     const parentId = pathStore[pathStore.length - 1].parentId
     // 查询过滤条件
     const filters = React.useMemo(() => ({
@@ -125,7 +144,7 @@ const Home = () => {
         return () => {
             requestId.current += 1
         }
-    }, [parentId])
+    }, [parentId, category])
     // 数据重新加载
     const reLoad = (filters_) => {
         setLoading(true)
@@ -154,9 +173,11 @@ const Home = () => {
             setDirList([])
             setFileList([])
         }
-        GetFileList(params).then(res => {
+        const request = category ? CATEGORY_API[category.type](params) : GetFileList(params)
+        request.then(res => {
             if (id !== requestId.current) return
-            const { total, pageNum, pageSize, pages, list } = res.data.pageInfo
+            // 分类接口直接返回分页对象
+            const { total, pageNum, pageSize, pages, list } = category ? res.data : res.data.pageInfo
             setFinished(pageNum >= pages || list.length === 0)
             setPagination({ total, pageNum, pageSize, pages })
             const fileList_ = []
@@ -216,7 +237,8 @@ const Home = () => {
     // 鼠标右键点击
     const handleContextMenu = (e) => {
         e.preventDefault()
-        if (contextMenuOpen || fileContextMenuOpen) {
+        // 分类视图没有所在文件夹，不提供上传和新建文件夹
+        if (category || contextMenuOpen || fileContextMenuOpen) {
             return
         }
         setContextMenuOpen(true)
