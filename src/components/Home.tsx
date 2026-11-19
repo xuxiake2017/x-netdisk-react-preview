@@ -16,7 +16,7 @@ import {
 } from "../actions";
 import { GetInfo } from "../api/user";
 import FILE_TYPE from "../utils/FileUtils";
-import { useHistory } from "react-router";
+import { useHistory, useLocation } from "react-router";
 import { Scrollbars } from 'react-custom-scrollbars';
 import TextFieldDialog from "./common/TextFieldDialog";
 import FileContextMenu from "./file/FileContextMenu";
@@ -50,17 +50,53 @@ const useStyles = makeStyles((theme) => ({
     }
 }))
 
+const ROOT_DIR = { parentId: -1, fileRealName: '全部文件' }
+
+// 地址格式：/home?path=12-文档/34-合同，每段为 "文件夹id-文件夹名"
+const parseDirPath = (search) => {
+    const path = [ROOT_DIR]
+    const raw = search.replace(/^\?/, '').split('&').find(item => item.startsWith('path='))
+    if (!raw) {
+        return path
+    }
+    for (const segment of raw.slice(5).split('/')) {
+        const match = /^(\d+)-(.*)$/.exec(segment)
+        if (!match) {
+            break
+        }
+        let fileRealName = match[2]
+        try {
+            fileRealName = decodeURIComponent(fileRealName)
+        } catch (e) {
+        }
+        path.push({ parentId: Number(match[1]), fileRealName })
+    }
+    return path
+}
+
+const buildDirUrl = (path) => {
+    const dirs = path.slice(1)
+    if (dirs.length === 0) {
+        return '/home'
+    }
+    return `/home?path=${dirs.map(item => `${item.parentId}-${encodeURIComponent(item.fileRealName)}`).join('/')}`
+}
+
 const Home = () => {
     const classes = useStyles()
     const dispatch = useDispatch()
     const history = useHistory()
+    const location = useLocation()
     const [fileList, setFileList] = React.useState([])
     const [dirList, setDirList] = React.useState([])
+    // 储存文件树路径
+    const pathStore = React.useMemo(() => parseDirPath(location.search), [location.search])
+    const parentId = pathStore[pathStore.length - 1].parentId
     // 查询过滤条件
-    const [filters, setFilters] = React.useState({
-        parentId: -1,
+    const filters = React.useMemo(() => ({
+        parentId,
         fileRealName: ''
-    })
+    }), [parentId])
     // 分页参数
     const [pagination, setPagination] = React.useState({
         total: 0,
@@ -81,16 +117,15 @@ const Home = () => {
     let reloadFlag = React.useRef(false)
 
     useEffect(() => {
-        const params = {
-            ...pagination,
-            ...filters
-        }
-        getFileList(params)
         dispatch(drawerToggleAction(true))
+    }, [])
+    // 绘制前清空并加载，避免新路径下先渲染一帧旧文件夹内容
+    React.useLayoutEffect(() => {
+        reLoad(filters)
         return () => {
             requestId.current += 1
         }
-    }, [])
+    }, [parentId])
     // 数据重新加载
     const reLoad = (filters_) => {
         setLoading(true)
@@ -151,15 +186,7 @@ const Home = () => {
     const handleFileDoubleClick = (file) => {
         // console.log('handleFileDoubleClick', file)
         if (file.isDir === 0) {
-            const filters_ = {
-                ...filters,
-                parentId: file.id
-            }
-            setFilters(filters_)
-            setLoading(true)
-            reLoad(filters_)
-            const pathStore_ = [...pathStore, {parentId: file.id, fileRealName: file.fileName}]
-            setPathStore(pathStore_)
+            history.push(buildDirUrl([...pathStore, {parentId: file.id, fileRealName: file.fileName}]))
         }
         if (file.fileType === FILE_TYPE.FILE_TYPE_OF_PIC) {
             dispatch(openImagePreviewPopover([
@@ -179,26 +206,12 @@ const Home = () => {
             history.push(`/mediaPreview/${file.key}`)
         }
     }
-    // 储存文件树路径
-    const [pathStore, setPathStore] = React.useState([
-        {parentId: -1, fileRealName: '全部文件'}
-    ])
     // 路径跳转
     const jump = (parentId, index) => {
-        if ((pathStore.length === 1) || (pathStore.length > 1 && index + 1 === pathStore.length)) {
+        if (index + 1 === pathStore.length) {
             return
         }
-        const pathStore_ = []
-        Object.assign(pathStore_, pathStore)
-        pathStore_.splice(index + 1, pathStore_.length - 1)
-        setPathStore(pathStore_)
-        const filters_ = {
-            ...filters,
-            parentId
-        }
-        setFilters(filters_)
-        setLoading(true)
-        reLoad(filters_)
+        history.push(buildDirUrl(pathStore.slice(0, index + 1)))
     }
     // 鼠标右键点击
     const handleContextMenu = (e) => {
