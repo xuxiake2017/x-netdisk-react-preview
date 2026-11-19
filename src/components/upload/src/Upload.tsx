@@ -108,7 +108,7 @@ class Upload extends React.Component {
             headers: this.props.headers,
             withCredentials: this.props.withCredentials,
             file: rawFile,
-            data: this.props.data,
+            data: typeof this.props.data === 'function' ? this.props.data(rawFile) : this.props.data,
             filename: this.props.name,
             action: this.props.action,
             onProgress: e => {
@@ -199,7 +199,7 @@ Upload.propTypes = {
     type: PropTypes.string,
     action: PropTypes.string.isRequired,
     name: PropTypes.string,
-    data: PropTypes.object,
+    data: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     headers: PropTypes.object,
     withCredentials: PropTypes.bool,
     multiple: PropTypes.bool,

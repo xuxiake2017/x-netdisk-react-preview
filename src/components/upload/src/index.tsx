@@ -308,7 +308,7 @@ UploadContainer.defaultProps = {
 UploadContainer.propTypes = {
     action: PropTypes.string.isRequired,
     headers: PropTypes.object,
-    data: PropTypes.object,
+    data: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     multiple: PropTypes.bool,
     name: PropTypes.string,
     drag: PropTypes.bool,

@@ -15,7 +15,7 @@ import {
 import GetFileMD5 from "../../utils/getFileMD5";
 import { CheckMd5, UploadMD5 } from "../../api/file";
 import { GetInfo } from "../../api/user";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, useStore } from "react-redux";
 import UploadProgress from "./UploadProgress";
 import { getToken } from "../../utils/auth";
 
@@ -39,23 +39,25 @@ const UploadWithBusiness = (props, ref) => {
     const user = useSelector(state => {
         return state.userInfo
     })
-    const filesInStore = useSelector(state => {
-        return state.files
-    })
+    const store = useStore()
 
-    // 文件上传
-    const [uploadData, setUploadData] = React.useState({
-        parentId: -1,
-        md5Hex: '',
-        lastModifiedDate: null
-    })
     const [uploadProgressOpen, setUploadProgressOpen] = React.useState(false)
     const [uploadFileList, setUploadFileList] = React.useState([])
     // fileListRef为空后，重新加载文件列表
     const fileListRef = React.useRef([])
 
+    // 写入 store 后会立即开始上传，此时组件尚未重新渲染，必须直接读取 store
     const getFile = (uid) => {
-        return filesInStore.find(file => file.uid === uid)
+        return store.getState().files.find(file => file.uid === uid)
+    }
+
+    const getUploadData = (file) => {
+        const file_ = getFile(file.uid)
+        return {
+            lastModifiedDate: file_.lastModifiedDate,
+            md5Hex: file_.md5Hex,
+            parentId: file_.parentId
+        }
     }
 
     // 选择上传文件后
@@ -132,12 +134,6 @@ const UploadWithBusiness = (props, ref) => {
         if (!file_) {
             dispatch(openWarningNotification('MD5未计算完毕'))
             throw new Error('MD5未计算完毕');
-        } else {
-            setUploadData({
-                lastModifiedDate: file_.lastModifiedDate,
-                md5Hex: file_.md5Hex,
-                parentId: props.filters.parentId
-            })
         }
         if (file_.isExist) {
             // 服务器已经存在该文件
@@ -187,7 +183,7 @@ const UploadWithBusiness = (props, ref) => {
         <React.Fragment>
             <Upload
                 className={classes.uploadComponent}
-                data={uploadData}
+                data={getUploadData}
                 withCredentials={true}
                 headers={getToken() ? { 'X-Token': getToken() } : {}}
                 action={uploadAction}
