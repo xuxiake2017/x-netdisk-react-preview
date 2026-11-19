@@ -1,41 +1,39 @@
-## 个人react练习demo && x-netdisk react web 客户端
+# x-netdisk React Web 客户端
 
-## Available Scripts
+前端已迁移到 React 18、TypeScript 和 Vite。为保持原页面布局，UI 层继续使用 Material UI 4。
 
-In the project directory, you can run:
+环境要求：Node.js 20.19+、pnpm 10+。
 
-### `yarn start`
+## 开发
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```bash
+pnpm install
+pnpm dev
+```
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+打开 <http://localhost:3000>。开发服务器会把 `/netdisk` 请求代理到 `http://localhost:8080`。
 
-### `yarn build`
+## 检查与构建
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+pnpm typecheck
+pnpm build
+pnpm preview
+```
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+生产构建输出到 `dist`。生产环境接口地址默认是 `http://127.0.0.1:8080/netdisk`，可通过 `VITE_API_BASE_URL` 覆盖。
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## TypeScript 迁移说明
 
-## 图片
+数据层、Redux、配置和应用入口已纳入 TypeScript 检查。部分旧 UI 与上传/预览组件仍依赖 PropTypes 和不兼容 React 18 的第三方类型，暂以文件级 `@ts-nocheck` 保持行为不变，后续可按模块逐步补齐类型并移除标记。
+
+
+## 截图
+
 ![登录](https://github.com/xuxiake2017/x-netdisk-react-preview/blob/master/pic/1.JPG?raw=true)
 
-![主界面1](https://github.com/xuxiake2017/x-netdisk-react-preview/blob/master/pic/2.JPG?raw=true)
+![主界面](https://github.com/xuxiake2017/x-netdisk-react-preview/blob/master/pic/2.JPG?raw=true)
 
 ## 特别感谢
-+ [Cloudreve](https://github.com/cloudreve/Cloudreve) 主要样式参考开源
-## 更新日志
-#### 2020.07.15
-- 整理文件夹，将组件归类
-- 更改路由为HashRouter（服务器需要部署多个web）
-#### 2020.07.21
-- 分离上传组件业务，增加文件移动、上传、下载
-## 持续更新ing
 
-
-
+- [Cloudreve](https://github.com/Cloudreve/Cloudreve)，主要样式参考该开源项目。
