@@ -21,7 +21,6 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import TextFieldDialog from "./common/TextFieldDialog";
 import FileContextMenu from "./file/FileContextMenu";
 import UploadWithBusiness from "./file/UploadWithBusiness";
-import { getToken } from '../utils/auth'
 import AppConf from "../conf/AppConf"
 import ConfirmDialog from "./common/ConfirmDialog";
 import MoveFileDialog from "./file/MoveFileDialog";
@@ -366,8 +365,13 @@ const Home = () => {
     }
     const handleDownloadFile = () => {
         setFileContextMenuOpen(false)
-        const uri = `${AppConf.baseUrl()}/file/downLoad?fileKey=${selectFile.key}&X-Token=${getToken()}`
-        window.open(uri, '_blank')
+        const link = document.createElement('a')
+        link.href = `${AppConf.baseUrl()}/file/downLoad?fileKey=${encodeURIComponent(selectFile.key)}`
+        link.target = '_blank'
+        link.rel = 'noopener'
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
     }
     const handleMoveFile = () => {
         setFileContextMenuOpen(false)

@@ -17,6 +17,7 @@ import { CheckMd5, UploadMD5 } from "../../api/file";
 import { GetInfo } from "../../api/user";
 import { useDispatch, useSelector } from "react-redux";
 import UploadProgress from "./UploadProgress";
+import { getToken } from "../../utils/auth";
 
 const useStyles = makeStyles(() => (
     {
@@ -188,6 +189,7 @@ const UploadWithBusiness = (props, ref) => {
                 className={classes.uploadComponent}
                 data={uploadData}
                 withCredentials={true}
+                headers={getToken() ? { 'X-Token': getToken() } : {}}
                 action={uploadAction}
                 onChange={changeHandle}
                 onSuccess={handleUploadSuccess}

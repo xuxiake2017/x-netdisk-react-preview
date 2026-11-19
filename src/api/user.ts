@@ -1,5 +1,4 @@
 import request from '../utils/request'
-import qs from 'qs'
 
 export const RequestLogin = params => {
   return request({
@@ -9,17 +8,16 @@ export const RequestLogin = params => {
   })
 }
 
-export const GetInfo = params => {
+export const GetInfo = () => {
   return request({
     url: '/user/getInfo',
-    method: 'get',
-    params
+    method: 'post'
   })
 }
 
 export const Logout = () => {
   return request({
     url: '/user/logout',
-    method: 'get',
+    method: 'post'
   })
 }

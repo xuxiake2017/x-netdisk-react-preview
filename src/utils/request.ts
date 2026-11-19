@@ -26,8 +26,7 @@ service.interceptors.request.use(
         return config
     },
     error => {
-        // Do something with request error
-        Promise.reject(error)
+        return Promise.reject(error)
     }
 )
 
@@ -45,9 +44,9 @@ service.interceptors.response.use(
                 message: response.data.msg
             }))
             // 登录过期
-            if (res.code === 20016) {
+            if (res.code === 20016 || res.code === 41000) {
                 removeToken()
-                window.setInterval(() => {
+                window.setTimeout(() => {
                     window.location.reload()
                 }, 1000)
             }
@@ -58,10 +57,23 @@ service.interceptors.response.use(
     },
     error => {
         console.log('err' + error) // for debug
+        const response = error.response
+        const responseData = response && response.data
+        const message = responseData && responseData.msg
+            ? responseData.msg
+            : error.message || '请求失败'
+
+        if (response && response.status === 401) {
+            removeToken()
+            window.setTimeout(() => {
+                window.location.reload()
+            }, 1000)
+        }
+
         store.dispatch(openNotification({
             autoHideDuration: 3000,
             severity: 'error',
-            message: error
+            message
         }))
         return Promise.reject(error)
     }
