@@ -49,7 +49,6 @@ import { Logout } from '../api/user'
 import { removeToken } from "../utils/auth";
 import ConfirmDialog from "./common/ConfirmDialog";
 import ShowStorage from "./file/ShowStorage";
-import MediaInfoBar from "./filePreview/MediaInfoBar";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -355,13 +354,6 @@ export default function PersistentDrawerLeft(props) {
                                         <MoreIcon />
                                     </IconButton>
                                 </div>
-                            </React.Fragment>
-                        )
-                    }
-                    {
-                        isPdfPreview && (
-                            <React.Fragment>
-                                <MediaInfoBar/>
                             </React.Fragment>
                         )
                     }
