@@ -1,76 +1,99 @@
-// @ts-nocheck -- Legacy module pending typed refactor.
-import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
+// @ts-nocheck -- Legacy Redux state pending typed refactor.
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Document, Page, pdfjs } from 'react-pdf'
+import 'react-pdf/dist/Page/AnnotationLayer.css'
+import 'react-pdf/dist/Page/TextLayer.css'
 import PropTypes from 'prop-types'
-import PDFJS from 'pdfjs-dist/build/pdf';
-import { TextLayerBuilder } from 'pdfjs-dist/web/pdf_viewer';
-import 'pdfjs-dist/web/pdf_viewer.css';
-import { drawerToggleAction, setPdfViewer, changePdfCurrentNumPage } from "../../actions";
-import {useDispatch, useSelector} from "react-redux";
-import {Scrollbars} from "react-custom-scrollbars";
+import { useDispatch, useSelector } from 'react-redux'
+import { changePdfScale, drawerToggleAction, setPdfViewer } from '../../actions'
+import { makeStyles } from '@material-ui/core/styles'
+import Paper from '@material-ui/core/Paper'
+import IconButton from '@material-ui/core/IconButton'
+import Typography from '@material-ui/core/Typography'
+import MySvgIcon from '../common/SvgIcon'
+import Loading from '../common/Loading'
 
-PDFJS.GlobalWorkerOptions.workerSrc = `/static/pdfjs/2.3.200/pdf.worker.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.min.mjs',
+    import.meta.url
+).toString()
 
 const useStyles = makeStyles(() => ({
     container: {
-        overflowY: "auto",
         height: 'calc(100% - 64px)',
-        justifyContent: "center",
         background: '#3e3e3e',
-        position: "relative"
-    },
-    button: {
-        zIndex: 1,
-        position: "fixed",
-        right: 20,
-        bottom: 20
-    },
-    toolBar: {
-        width: '100%',
-        height: 32,
-        background: '#000',
-        position: "fixed",
-        top: 0
+        position: 'relative',
+        overflow: 'hidden'
     },
     viewerContainer: {
-        overflow: 'auto',
         position: 'absolute',
-        top: 0,
-        right: 0,
-        bottom: 0,
+        inset: 0,
+        overflow: 'auto'
+    },
+    document: {
+        minHeight: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        padding: '16px'
+    },
+    page: {
+        boxShadow: '0 2px 12px rgba(0, 0, 0, .45)'
+    },
+    status: {
+        minHeight: 240,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#fff'
+    },
+    pdfJsToolbar: {
+        display: 'flex',
+        justifyContent: 'center',
+        position: 'absolute',
         left: 0,
+        right: 0,
+        bottom: 40,
+        pointerEvents: 'none',
+        '& > *': {
+            width: 220,
+            height: 50,
+            background: 'rgba(0, 0, 0, 1)',
+            opacity: .8,
+            pointerEvents: 'auto'
+        }
+    },
+    paperRoot: {
+        display: 'flex',
+        justifyContent: 'space-around',
+        fontSize: '1.5em'
+    },
+    btn: {
+        color: '#d5d5d5'
     }
 }))
 
-const DocPreview = (props) => {
-
+const DocPreview = ({ file }) => {
     const classes = useStyles()
-    const pdfViewer = useSelector(state => {
-        return state.appInfo.pdfViewer
-    })
-    const scale = React.useMemo(() => pdfViewer.scale)
-    const pdfViewerRef = React.useRef(null);
-
-    const [canvasHeight, setCanvasHeight] = React.useState(0)
-    const [currentNumPage, setCurrentNumPage] = React.useState(1)
-
-    const setCurrentNumPage_ = React.useCallback((num) => {
-        setCurrentNumPage(num)
-        dispatch(changePdfCurrentNumPage(num))
-    }, [currentNumPage])
-
     const dispatch = useDispatch()
+    const pdfViewer = useSelector(state => state.appInfo.pdfViewer)
+    const [errorMessage, setErrorMessage] = useState('')
+    const [toolBarVisible, setToolBarVisible] = useState(false)
+    const [opacity, setOpacity] = useState(8)
 
-    React.useEffect(() => {
-        if (pdf) {
-            // renderPDF(pdf)
-            reRenderPDF(pdf)
-        }
-    }, [scale])
+    const source = useMemo(() => ({
+        url: file.previewUrl,
+        // 关闭整文件流和自动预取，仅按页面解析所需区间读取。
+        // 初始 200 请求只用于确认文件大小及 Range 能力，读取响应头后会立即取消。
+        disableRange: false,
+        disableStream: true,
+        disableAutoFetch: true,
+        rangeChunkSize: 256 * 1024
+    }), [file.previewUrl])
 
-    React.useEffect(() => {
+    useEffect(() => {
         dispatch(drawerToggleAction(false))
-        getPDF(props.file.previewUrl)
+
         return () => {
             dispatch(setPdfViewer({
                 isPreview: false,
@@ -81,142 +104,97 @@ const DocPreview = (props) => {
                 scrollTop: 0
             }))
         }
+    }, [dispatch])
+
+    const handleLoadSuccess = useCallback(({ numPages }) => {
+        setErrorMessage('')
+        dispatch(setPdfViewer({
+            ...pdfViewer,
+            isPreview: true,
+            fileName: file.fileName,
+            numPages,
+            currentNumPage: 1
+        }))
+    }, [dispatch, file.fileName, pdfViewer])
+
+    const handleLoadError = useCallback((error) => {
+        console.error('PDF preview failed', error)
+        setErrorMessage('PDF 加载失败，请确认预览文件已生成，并且文件服务支持跨域与 HTTP Range 请求。')
     }, [])
 
-    const [pdf, setPdf] = React.useState(null)
-
-    function getPDF(url) {
-        PDFJS.getDocument(url).then((pdf) => {
-            setPdf(pdf)
-            dispatch(setPdfViewer({
-                ...pdfViewer,
-                isPreview: true,
-                fileName: props.file.fileName,
-                numPages: pdf.numPages,
-            }))
-            renderPDF(pdf)
-        })
+    const handleMouseMove = () => {
+        if (toolBarVisible || !pdfViewer.isPreview) {
+            return
+        }
+        setOpacity(8)
+        setToolBarVisible(true)
+        window.setTimeout(() => {
+            const id = window.setInterval(() => {
+                setOpacity(previous => {
+                    if (previous > 0) {
+                        return previous - 1
+                    }
+                    window.clearInterval(id)
+                    setToolBarVisible(false)
+                    return 0
+                })
+            }, 50)
+        }, 3000)
     }
 
-    function reRenderPDF(pdf) {
-        for (let num = 1; num <= pdf.numPages; num++) {
-            pdf.getPage(num).then((page) => {
-                const viewport = page.getViewport({ scale });
-                let pageDiv = document.getElementById('page-' + (page.pageIndex + 1))
-                pageDiv.setAttribute('style', `position: relative; height: ${viewport.height + 18}px; width: ${viewport.width + 18}px;`);
-
-                const canvas = pageDiv.firstElementChild
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                setCanvasHeight(canvas.height)
-
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-
-                // reRenderPage(page, renderContext, pageDiv, viewport)
-                page.render(renderContext)
-            });
+    const handleZoomIn = () => {
+        if (pdfViewer.scale < 2) {
+            dispatch(changePdfScale(Number((pdfViewer.scale + 0.1).toFixed(1))))
         }
     }
 
-    function reRenderPage(page, renderContext, pageDiv, viewport) {
-        page.render(renderContext).then(() => {
-            return page.getTextContent();
-        }).then((textContent) => {
-            const textLayerDiv = pageDiv.children[1];
-            textLayerDiv.innerHTML = ''
-
-            // 创建新的TextLayerBuilder实例
-            const textLayer = new TextLayerBuilder({
-                textLayerDiv: textLayerDiv,
-                pageIndex: page.pageIndex,
-                viewport: viewport
-            });
-
-            textLayer.setTextContent(textContent);
-
-            textLayer.render();
-        });
-    }
-
-    function renderPDF(pdf) {
-        const container = pdfViewerRef.current
-        container.innerHTML = ''
-        for (let num = 1; num <= pdf.numPages; num++) {
-            pdf.getPage(num).then((page) => {
-                const viewport = page.getViewport({ scale });
-                let pageDiv = document.createElement('div');
-                pageDiv = document.createElement('div');
-                pageDiv.setAttribute('id', 'page-' + (page.pageIndex + 1));
-                pageDiv.setAttribute('style', `position: relative; height: ${viewport.height + 18}px; width: ${viewport.width + 18}px;`);
-                pageDiv.setAttribute('class', 'page');
-                container.appendChild(pageDiv);
-
-                const canvas = document.createElement('canvas');
-                pageDiv.appendChild(canvas);
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                setCanvasHeight(canvas.height)
-
-                const renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-
-                renderPage(page, renderContext, pageDiv, viewport)
-                // page.render(renderContext)
-            });
+    const handleZoomOut = () => {
+        if (pdfViewer.scale > 0.4) {
+            dispatch(changePdfScale(Number((pdfViewer.scale - 0.1).toFixed(1))))
         }
-    }
-
-    function renderPage(page, renderContext, pageDiv, viewport) {
-        page.render(renderContext).then(() => {
-            return page.getTextContent();
-        }).then((textContent) => {
-            // 创建文本图层div
-            const textLayerDiv = document.createElement('div');
-            textLayerDiv.setAttribute('class', 'textLayer');
-            // 将文本图层div添加至每页pdf的div中
-            pageDiv.appendChild(textLayerDiv);
-
-            // 创建新的TextLayerBuilder实例
-            const textLayer = new TextLayerBuilder({
-                textLayerDiv: textLayerDiv,
-                pageIndex: page.pageIndex,
-                viewport: viewport
-            });
-
-            textLayer.setTextContent(textContent);
-
-            textLayer.render();
-        });
-    }
-
-    const handleScrollFrame = ({ scrollTop }) => {
-        setCurrentNumPage_(parseInt(scrollTop / canvasHeight) + 1)
     }
 
     return (
-        <React.Fragment>
-            <div className={classes.container}>
-                <div className={classes.viewerContainer}>
-                    <Scrollbars onScrollFrame={handleScrollFrame}>
-                        <div ref={pdfViewerRef} className={'pdfViewer'}/>
-                    </Scrollbars>
-                </div>
+        <div className={classes.container}>
+            <div className={classes.viewerContainer} onMouseMove={handleMouseMove}>
+                <Document
+                    className={classes.document}
+                    file={source}
+                    loading={<div className={classes.status}><Loading type="DualRing" size={50} /></div>}
+                    error={<div className={classes.status}><Typography>{errorMessage || 'PDF 加载失败'}</Typography></div>}
+                    onLoadSuccess={handleLoadSuccess}
+                    onLoadError={handleLoadError}
+                >
+                    <Page
+                        className={classes.page}
+                        pageNumber={pdfViewer.currentNumPage}
+                        scale={pdfViewer.scale}
+                        renderAnnotationLayer
+                        renderTextLayer
+                    />
+                </Document>
             </div>
-        </React.Fragment>
-    );
+            {toolBarVisible && pdfViewer.isPreview && (
+                <div className={classes.pdfJsToolbar} style={{ opacity: opacity / 10 }}>
+                    <Paper elevation={3} classes={{ root: classes.paperRoot }}>
+                        <IconButton aria-label="放大" onClick={handleZoomIn} className={classes.btn}>
+                            <MySvgIcon name="#icon-plus_circle" />
+                        </IconButton>
+                        <IconButton aria-label="缩小" onClick={handleZoomOut} className={classes.btn}>
+                            <MySvgIcon name="#icon-minus_circle" />
+                        </IconButton>
+                    </Paper>
+                </div>
+            )}
+        </div>
+    )
 }
 
 DocPreview.propTypes = {
-    file: PropTypes.object
+    file: PropTypes.shape({
+        previewUrl: PropTypes.string.isRequired,
+        fileName: PropTypes.string.isRequired
+    }).isRequired
 }
 
 export default DocPreview

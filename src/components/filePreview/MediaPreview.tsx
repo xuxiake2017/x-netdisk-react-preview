@@ -9,7 +9,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import FILE_TYPE from "../../utils/FileUtils";
 import MusicPlayer from "./MusicPlayer";
-import DocPreview from "./DocPreviewSinglePage";
+import DocPreview from "./DocPreview";
 
 const useStyles = makeStyles((theme) => ({
     root: {
