@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import {
     Menu as MenuIcon,
+    ArrowBack as ArrowBackIcon,
     Mail as MailIcon,
     AccountCircle,
     MoreVert as MoreIcon,
@@ -62,6 +63,10 @@ const useStyles = makeStyles((theme) => ({
     },
     appBarTitle: {
         maxWidth: 200
+    },
+    previewTitle: {
+        maxWidth: 'none',
+        minWidth: 0
     },
     pdfPreviewAppBar: {
         background: '#000'
@@ -290,19 +295,40 @@ export default function PersistentDrawerLeft(props) {
                 color={themeType === 'dark' ? 'default' : 'primary'}
             >
                 <Toolbar>
-                    <IconButton
-                        color="inherit"
-                        aria-label="open drawer"
-                        onClick={() => {
-                            toggleDrawerOpen(!drawerOpen)
-                        }}
-                        edge="start"
-                        className={clsx(classes.menuButton)}
+                    {props.onBack ? (
+                        <Tooltip title="返回 (Esc)">
+                            <IconButton
+                                color="inherit"
+                                aria-label="返回"
+                                onClick={props.onBack}
+                                edge="start"
+                                className={clsx(classes.menuButton)}
+                            >
+                                <ArrowBackIcon />
+                            </IconButton>
+                        </Tooltip>
+                    ) : (
+                        <IconButton
+                            color="inherit"
+                            aria-label="open drawer"
+                            onClick={() => {
+                                toggleDrawerOpen(!drawerOpen)
+                            }}
+                            edge="start"
+                            className={clsx(classes.menuButton)}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    )}
+                    <Typography
+                        variant="h6"
+                        noWrap
+                        className={clsx(classes.appBarTitle, {
+                            [classes.previewTitle]: props.onBack
+                        })}
+                        title={props.onBack ? props.title : undefined}
                     >
-                        <MenuIcon />
-                    </IconButton>
-                    <Typography variant="h6" noWrap className={classes.appBarTitle}>
-                        {isPdfPreview ? pdfViewer.fileName : APP_NAME}
+                        {props.onBack ? props.title : APP_NAME}
                     </Typography>
                     {
                         !isPdfPreview && (

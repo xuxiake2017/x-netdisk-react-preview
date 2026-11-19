@@ -2,14 +2,17 @@
 import React, { useEffect } from "react";
 import NavBar from "../NavBar";
 import { GetFileMediaInfo } from "../../api/file";
-import { useParams } from "react-router";
+import { useHistory, useParams } from "react-router";
+import { useDispatch } from "react-redux";
 import Player from 'griffith'
-import { useTheme } from "@material-ui/core/styles";
 import { makeStyles } from "@material-ui/core/styles";
-import Typography from "@material-ui/core/Typography";
 import FILE_TYPE from "../../utils/FileUtils";
 import MusicPlayer from "./MusicPlayer";
 import DocPreview from "./DocPreview";
+import { drawerToggleAction } from "../../actions";
+
+// 记录由应用内跳转打开的预览，刷新后仍可后退回原文件夹
+const IN_APP_PREVIEW_KEY = 'inAppPreviewFileKey'
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -38,10 +41,37 @@ const MediaPreview = (props) => {
 
     const classes = useStyles()
     const { fileKey } = useParams()
+    const history = useHistory()
+    const dispatch = useDispatch()
     const [playerProps, setPlayerProps] = React.useState(null)
     const [mediaFile, setMediaFile] = React.useState(null)
     const [audio, setAudio] = React.useState(null)
     const [isDocPreview, setIsDocPreview] = React.useState(false)
+    const handleBack = () => {
+        if (sessionStorage.getItem(IN_APP_PREVIEW_KEY) === fileKey) {
+            history.goBack()
+        } else {
+            history.replace('/home')
+        }
+    }
+    useEffect(() => {
+        if (history.action === 'PUSH') {
+            sessionStorage.setItem(IN_APP_PREVIEW_KEY, fileKey)
+        }
+        dispatch(drawerToggleAction(false))
+        const handleKeyDown = (event) => {
+            const target = event.target
+            if (event.key !== 'Escape' || event.defaultPrevented || document.fullscreenElement
+                || target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) {
+                return
+            }
+            handleBack()
+        }
+        window.addEventListener('keydown', handleKeyDown)
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [])
     useEffect(() => {
         if (fileKey) {
             GetFileMediaInfo({ fileKey }).then(res => {
@@ -93,17 +123,10 @@ const MediaPreview = (props) => {
     }, [])
     return (
         <React.Fragment>
-            <NavBar>
+            <NavBar title={mediaFile ? mediaFile.fileName : ''} onBack={handleBack}>
                 {
                     !isDocPreview && (
                         <div className={classes.root}>
-                            {
-                                mediaFile && (
-                                    <Typography variant="h6" gutterBottom>
-                                        {mediaFile.fileName}
-                                    </Typography>
-                                )
-                            }
                             {
                                 playerProps && (
                                     <React.Fragment>
