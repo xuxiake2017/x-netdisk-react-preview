@@ -44,7 +44,7 @@ const FileList = (props) => {
     return (
         <React.Fragment>
             {
-                props.loading && (
+                props.loading && (viewMode === 'LIST' || props.dirList.length + props.fileList.length === 0) && (
                     <Loading type={"DualRing"} size={50} />
                 )
             }
@@ -58,7 +58,7 @@ const FileList = (props) => {
             }
 
             {
-                !props.loading && viewMode !== 'LIST' && (
+                viewMode !== 'LIST' && (
                     props.dirList.length > 0 && (
                         <div>
                             <Typography
@@ -87,7 +87,7 @@ const FileList = (props) => {
                 )
             }
             {
-                !props.loading && viewMode !== 'LIST' && (
+                viewMode !== 'LIST' && (
                     props.fileList.length > 0 && (
                         <div>
                             <Typography
@@ -113,6 +113,11 @@ const FileList = (props) => {
                             </Grid>
                         </div>
                     )
+                )
+            }
+            {
+                props.loading && viewMode !== 'LIST' && props.dirList.length + props.fileList.length > 0 && (
+                    <Loading type="DualRing" size={50} />
                 )
             }
             {

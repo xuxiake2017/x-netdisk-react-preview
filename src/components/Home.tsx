@@ -4,7 +4,7 @@ import React, {useEffect} from "react";
 import { Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import FileList from "./file/FileList";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { GetFileList, MkDir, DeleteFile } from "../api/file";
 import FileBreadcrumbs from "./file/FileBreadcrumbs";
 import ContextMenu from "./file/ContextMenu";
@@ -72,6 +72,10 @@ const Home = () => {
     // 加载状态标记
     const [loading, setLoading] = React.useState(false)
     const [finished, setFinished] = React.useState(false)
+    const viewMode = useSelector(state => state.fileExplorer.viewMode)
+    const requestId = React.useRef(0)
+    const requestPending = React.useRef(false)
+    const loadFailed = React.useRef(false)
 
     // 重载标记
     let reloadFlag = React.useRef(false)
@@ -83,6 +87,9 @@ const Home = () => {
         }
         getFileList(params)
         dispatch(drawerToggleAction(true))
+        return () => {
+            requestId.current += 1
+        }
     }, [])
     // 数据重新加载
     const reLoad = (filters_) => {
@@ -101,51 +108,39 @@ const Home = () => {
     }
     // 获取文件
     const getFileList = (params) => {
-        // setLoading(true)
+        const id = ++requestId.current
+        const replace = params.pageNum === 1 || reloadFlag.current
+        reloadFlag.current = false
+        requestPending.current = true
+        loadFailed.current = false
+        setLoading(true)
         setFinished(false)
+        if (replace) {
+            setDirList([])
+            setFileList([])
+        }
         GetFileList(params).then(res => {
-            setLoading(false)
-            const pagination_ = {}
-            pagination_.total = res.data.pageInfo.total
-            pagination_.pageNum = res.data.pageInfo.pageNum
-            pagination_.pageSize = res.data.pageInfo.pageSize
-            pagination_.pages = res.data.pageInfo.pages
-            if (pagination_.pageNum * pagination_.pageSize > res.data.pageInfo.list.length) {
-                setFinished(true)
-            }
-            setPagination(pagination_)
-            const data = res.data.pageInfo.list
+            if (id !== requestId.current) return
+            const { total, pageNum, pageSize, pages, list } = res.data.pageInfo
+            setFinished(pageNum >= pages || list.length === 0)
+            setPagination({ total, pageNum, pageSize, pages })
             const fileList_ = []
             const dirList_ = []
-            data.forEach(item => {
+            list.forEach(item => {
                 if (item.isDir === 0) {
                     dirList_.push(item)
                 } else if (item.isDir === 1) {
                     fileList_.push(item)
                 }
             })
-            if (reloadFlag.current) {
-                setDirList([
-                    ...dirList_
-                ])
-                setFileList([
-                    ...fileList_
-                ])
-            } else {
-                setDirList(prevState => {
-                    return [
-                        ...prevState,
-                        ...dirList_
-                    ]
-                })
-                setFileList(prevState => {
-                    return [
-                        ...prevState,
-                        ...fileList_
-                    ]
-                })
-            }
-            reloadFlag.current = false
+            setDirList(previous => replace ? dirList_ : [...previous, ...dirList_])
+            setFileList(previous => replace ? fileList_ : [...previous, ...fileList_])
+        }).catch(() => {
+            if (id === requestId.current) loadFailed.current = true
+        }).finally(() => {
+            if (id !== requestId.current) return
+            requestPending.current = false
+            setLoading(false)
         })
     }
     // 文件单击
@@ -260,33 +255,21 @@ const Home = () => {
         })
         setPagination(pagination_)
     }
-    // 滚动事件处理（滚动加载）
-    const handleScrollFrame = ({ clientHeight,
-                                   clientWidth,
-                                   left,
-                                   scrollHeight,
-                                   scrollLeft,
-                                   scrollTop,
-                                   scrollWidth,
-                                   top }) => {
+    const handleScrollFrame = ({ clientHeight, scrollHeight, scrollTop }) => {
+        if (viewMode === 'LIST' || loading || requestPending.current || finished || clientHeight <= 0 || pagination.pageNum >= pagination.pages) {
+            return
+        }
         if (scrollHeight - (scrollTop + clientHeight) < 100) {
-            if (pagination.pageNum * pagination.pageSize > (fileList.length + dirList.length)) {
-                setFinished(true)
-                return;
-            }
-            if (loading) {
-                return
-            }
-            console.log('翻页')
-            const pagination_ = {
-                ...pagination,
-                pageNum: pagination.pageNum + 1
-            }
             getFileList({
-                ...pagination_,
-                ...filters
+                ...pagination,
+                ...filters,
+                pageNum: pagination.pageNum + 1
             })
-            setPagination(pagination_)
+        }
+    }
+    const handleScrollUpdate = (values) => {
+        if (!loadFailed.current && values.scrollHeight <= values.clientHeight + 1) {
+            handleScrollFrame(values)
         }
     }
     const setReload = (flag) => {
@@ -444,7 +427,7 @@ const Home = () => {
                         onDownloadFile={handleDownloadFile}
                         onMoveFile={handleMoveFile}
                     />
-                    <Scrollbars onScrollFrame={handleScrollFrame} autoHide>
+                    <Scrollbars onScrollFrame={handleScrollFrame} onUpdate={handleScrollUpdate} autoHide>
                         <FileList
                             dirList={dirList}
                             fileList={fileList}
