@@ -5,7 +5,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import {
     Menu as MenuIcon,
     ArrowBack as ArrowBackIcon,
-    Mail as MailIcon,
     AccountCircle,
     MoreVert as MoreIcon,
     Description as DescriptionIcon,
@@ -18,7 +17,6 @@ import {
     FolderShared,
     Delete as DeleteIcon,
     Person as PersonIcon,
-    Notifications as NotificationsIcon,
     Brightness4 as DarkThemeTypeIcon,
     Brightness7 as LightThemeTypeIcon
 } from '@material-ui/icons';
@@ -38,7 +36,6 @@ import {
     Collapse,
     Menu,
     MenuItem,
-    Badge,
     Drawer,
     AppBar,
     Toolbar,
@@ -253,22 +250,6 @@ export default function PersistentDrawerLeft(props) {
             open={isMobileMenuOpen}
             onClose={handleMobileMenuClose}
         >
-            <MenuItem>
-                <IconButton aria-label="show 4 new mails" color="inherit">
-                    <Badge badgeContent={4} color="secondary">
-                        <MailIcon />
-                    </Badge>
-                </IconButton>
-                <p>Messages</p>
-            </MenuItem>
-            <MenuItem>
-                <IconButton aria-label="show 11 new notifications" color="inherit">
-                    <Badge badgeContent={11} color="secondary">
-                        <NotificationsIcon />
-                    </Badge>
-                </IconButton>
-                <p>Notifications</p>
-            </MenuItem>
             <MenuItem onClick={handleProfileMenuOpen}>
                 <IconButton
                     aria-label="account of current user"
@@ -367,45 +348,39 @@ export default function PersistentDrawerLeft(props) {
                                             </IconButton>
                                         </Tooltip>
                                     )}
-                                    <IconButton aria-label="show 4 new mails" color="inherit">
-                                        <Badge badgeContent={4} color="secondary">
-                                            <MailIcon />
-                                        </Badge>
-                                    </IconButton>
-                                    <IconButton aria-label="show 17 new notifications" color="inherit">
-                                        <Badge badgeContent={17} color="secondary">
-                                            <NotificationsIcon />
-                                        </Badge>
-                                    </IconButton>
-                                    <IconButton
-                                        edge="end"
-                                        aria-label="account of current user"
-                                        aria-controls={menuId}
-                                        aria-haspopup="true"
-                                        onClick={handleProfileMenuOpen}
-                                        color="inherit"
-                                    >
-                                        {userInfo ? <Avatar className={classes.avatar} src={userInfo.avatar}/> : <AccountCircle /> }
-                                    </IconButton>
+                                    {userInfo && (
+                                        <IconButton
+                                            edge="end"
+                                            aria-label="account of current user"
+                                            aria-controls={menuId}
+                                            aria-haspopup="true"
+                                            onClick={handleProfileMenuOpen}
+                                            color="inherit"
+                                        >
+                                            <Avatar className={classes.avatar} src={userInfo.avatar}/>
+                                        </IconButton>
+                                    )}
                                 </div>
-                                <div className={classes.sectionMobile}>
-                                    <IconButton
-                                        aria-label="show more"
-                                        aria-controls={mobileMenuId}
-                                        aria-haspopup="true"
-                                        onClick={handleMobileMenuOpen}
-                                        color="inherit"
-                                    >
-                                        <MoreIcon />
-                                    </IconButton>
-                                </div>
+                                {userInfo && (
+                                    <div className={classes.sectionMobile}>
+                                        <IconButton
+                                            aria-label="show more"
+                                            aria-controls={mobileMenuId}
+                                            aria-haspopup="true"
+                                            onClick={handleMobileMenuOpen}
+                                            color="inherit"
+                                        >
+                                            <MoreIcon />
+                                        </IconButton>
+                                    </div>
+                                )}
                             </React.Fragment>
                         )
                     }
                 </Toolbar>
             </AppBar>
-            {renderMobileMenu}
-            {renderMenu}
+            {userInfo && renderMobileMenu}
+            {userInfo && renderMenu}
             <Drawer
                 className={classes.drawer}
                 variant="persistent"
