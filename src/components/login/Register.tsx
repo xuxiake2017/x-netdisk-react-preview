@@ -16,8 +16,10 @@ import { Visibility, VisibilityOff } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/core/styles'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
+import classnames from 'classnames'
 import NavBar from '../NavBar'
 import LoginLeftBg from '../../assets/login_left_bg.jpg'
+import LoginFormStyles from '../../style/LoginForm.module.scss'
 import AppConf from '../../conf/AppConf'
 import { RegisterByEmail, SendRegisterEmailCode } from '../../api/user'
 import { drawerToggleAction, openSuccessNotification, setUserInfo } from '../../actions'
@@ -30,27 +32,30 @@ const useStyles = makeStyles(theme => ({
         display: 'flex'
     },
     container: {
-        width: '100%',
-        minHeight: 'calc(100vh - 56px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         background: '#eaeefa',
+        width: '100%',
+        height: 'calc(100% - 56px)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         [theme.breakpoints.down('xs')]: {
-            minHeight: 'calc(100vh - 48px)'
+            height: 'calc(100% - 48px)'
         }
     },
     wrap: {
+        display: 'flex',
         width: 900,
-        maxWidth: '100%',
-        minHeight: 620,
-        alignItems: 'stretch',
-        justifyContent: 'center'
+        height: 700,
+        justifyContent: 'center',
+        alignItems: 'center',
+        background: '#eaeefa'
     },
     left: {
         width: 400,
+        height: 400,
         background: `url(${LoginLeftBg}) no-repeat center center`,
-        backgroundSize: 'cover',
+        backgroundSize: 'contain',
+        color: '#fff',
         [theme.breakpoints.down('sm')]: {
             display: 'none'
         }
@@ -58,26 +63,29 @@ const useStyles = makeStyles(theme => ({
     leftMask: {
         width: '100%',
         height: '100%',
-        color: '#fff',
         background: theme.palette.type === 'dark'
             ? 'rgba(0, 0, 0, .6)'
-            : 'linear-gradient(to top, rgba(247, 167, 102, .5), rgba(1, 42, 255, .5))'
+            : 'linear-gradient(to top, rgba(247, 167, 102, .5), rgba(1, 42, 255, .5))',
+        transition: 'background-color .4s'
     },
     slogan: {
         padding: theme.spacing(4)
     },
     form: {
-        boxSizing: 'border-box',
-        width: 430,
-        maxWidth: '100%',
-        padding: theme.spacing(5),
+        width: 390,
+        height: 550,
+        backgroundColor: theme.palette.background.paper,
         display: 'flex',
         flexDirection: 'column',
-        gap: theme.spacing(2.5),
-        background: theme.palette.background.paper
+        justifyContent: 'center',
+        alignItems: 'center',
+        '& > * + *': {
+            marginTop: theme.spacing(2)
+        },
+        padding: theme.spacing(5)
     },
-    title: {
-        color: '#012aff'
+    alignSelf: {
+        alignSelf: 'start'
     },
     field: {
         width: '100%'
@@ -87,23 +95,17 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'flex-end',
         gap: theme.spacing(1)
     },
-    captchaImage: {
-        width: 120,
-        height: 40,
-        objectFit: 'cover',
-        cursor: 'pointer'
-    },
     codeButton: {
         minWidth: 126,
         whiteSpace: 'nowrap'
     },
     submit: {
-        alignSelf: 'center',
-        width: '60%',
+        backgroundColor: 'rgba(1, 42, 255, 1)',
+        width: '50%',
         borderRadius: 20
     },
     loginLink: {
-        alignSelf: 'center'
+        alignSelf: 'start'
     }
 }))
 
@@ -219,65 +221,70 @@ const Register = () => {
                                 </Typography>
                             </div>
                         </div>
-                        <form className={classes.form} onSubmit={submitHandler}>
-                            <Typography variant="h4" className={classes.title}>邮箱注册</Typography>
-                            <TextField
-                                className={classes.field}
-                                name="email"
-                                label="邮箱"
-                                type="email"
-                                value={form.email}
-                                onChange={changeHandler}
-                                autoComplete="email"
-                            />
-                            <FormControl className={classes.field}>
-                                <InputLabel htmlFor="register-password">密码</InputLabel>
-                                <Input
-                                    id="register-password"
-                                    name="password"
+                        <form className={classnames(classes.form, LoginFormStyles.right)} onSubmit={submitHandler}>
+                            <Typography variant="h4" className={classnames(LoginFormStyles.header, classes.alignSelf)}>
+                                邮箱注册
+                            </Typography>
+                            <Grid container justify="center">
+                                <TextField
+                                    name="email"
+                                    label="邮箱"
+                                    type="email"
+                                    fullWidth
+                                    value={form.email}
+                                    onChange={changeHandler}
+                                    autoComplete="email"
+                                />
+                            </Grid>
+                            <Grid container justify="center">
+                                <FormControl className={classes.field}>
+                                    <InputLabel htmlFor="register-password">密码</InputLabel>
+                                    <Input
+                                        id="register-password"
+                                        name="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={form.password}
+                                        onChange={changeHandler}
+                                        autoComplete="new-password"
+                                        endAdornment={
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    aria-label="显示或隐藏密码"
+                                                    onClick={() => setShowPassword(value => !value)}
+                                                >
+                                                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                    />
+                                </FormControl>
+                            </Grid>
+                            <Grid container justify="center">
+                                <TextField
+                                    name="confirmPassword"
+                                    label="确认密码"
                                     type={showPassword ? 'text' : 'password'}
-                                    value={form.password}
+                                    fullWidth
+                                    value={form.confirmPassword}
                                     onChange={changeHandler}
                                     autoComplete="new-password"
-                                    endAdornment={
-                                        <InputAdornment position="end">
-                                            <IconButton
-                                                aria-label="显示或隐藏密码"
-                                                onClick={() => setShowPassword(value => !value)}
-                                            >
-                                                {showPassword ? <Visibility /> : <VisibilityOff />}
-                                            </IconButton>
-                                        </InputAdornment>
-                                    }
                                 />
-                            </FormControl>
-                            <TextField
-                                className={classes.field}
-                                name="confirmPassword"
-                                label="确认密码"
-                                type={showPassword ? 'text' : 'password'}
-                                value={form.confirmPassword}
-                                onChange={changeHandler}
-                                autoComplete="new-password"
-                            />
-                            <div className={classes.inlineField}>
+                            </Grid>
+                            <Grid container justify="center" className={LoginFormStyles.captchaContainer}>
                                 <TextField
-                                    className={classes.field}
                                     name="imgCode"
                                     label="图形验证码"
+                                    fullWidth
                                     value={form.imgCode}
                                     onChange={changeHandler}
                                     inputProps={{ maxLength: 4 }}
                                 />
                                 <Tooltip title="点击更换">
-                                    <img
-                                        className={classes.captchaImage}
-                                        src={captchaSrc}
-                                        alt="图形验证码"
-                                        onClick={refreshCaptcha}
-                                    />
+                                    <div className={LoginFormStyles.loginCaptcha}>
+                                        <img src={captchaSrc} alt="图形验证码" onClick={refreshCaptcha} />
+                                    </div>
                                 </Tooltip>
-                            </div>
+                            </Grid>
                             <div className={classes.inlineField}>
                                 <TextField
                                     className={classes.field}
@@ -300,7 +307,7 @@ const Register = () => {
                             </div>
                             {formError && <Typography color="error">{formError}</Typography>}
                             <Button
-                                className={classes.submit}
+                                className={classnames(classes.alignSelf, classes.submit)}
                                 type="submit"
                                 variant="contained"
                                 color="primary"

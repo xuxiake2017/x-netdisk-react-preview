@@ -1,6 +1,6 @@
 // @ts-nocheck -- Legacy module pending typed refactor.
 import {
-    TextField, Grid, Typography, Button, IconButton, InputLabel, FormControl, Input
+    TextField, Grid, Typography, Button, IconButton, InputLabel, FormControl, FormHelperText, Input
 } from "@material-ui/core";
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
@@ -97,6 +97,8 @@ const LoginForm = () => {
     });
     const [captchaSrc, setCaptchaSrc] = React.useState('');
     const [showPassword, setShowPassword] = React.useState(false);
+    const [submitting, setSubmitting] = React.useState(false)
+    const [fieldErrors, setFieldErrors] = React.useState({})
     React.useEffect(() => {
         dispatch(drawerToggleAction(false))
         setCaptchaSrc(createImg())
@@ -108,6 +110,10 @@ const LoginForm = () => {
             ...loginData,
             [textFieldName]: event.target.value
         })
+        setFieldErrors(previous => ({
+            ...previous,
+            [textFieldName]: ''
+        }))
     }
     const changeCaptcha = () => {
         setCaptchaSrc(createImg())
@@ -118,19 +124,42 @@ const LoginForm = () => {
         }
         return `${AppConf.baseUrl()}/user/createImg?${new Date().getTime()}`
     }
-    const loginHandler = () => {
-        const params = {
-            loginInfo: loginData.username,
-            password: loginData.password,
-            imgCode: loginData.captcha,
+    const validate = () => {
+        const errors = {}
+        if (!loginData.username.trim()) {
+            errors.username = '请输入用户名、邮箱或手机号'
         }
-        RequestLogin(params).then(res => {
-            console.log(res)
+        if (!loginData.password) {
+            errors.password = '请输入密码'
+        }
+        if (!loginData.captcha.trim()) {
+            errors.captcha = '请输入图形验证码'
+        } else if (loginData.captcha.trim().length !== 4) {
+            errors.captcha = '请输入 4 位图形验证码'
+        }
+        setFieldErrors(errors)
+        return Object.keys(errors).length === 0
+    }
+    const loginHandler = async event => {
+        event.preventDefault()
+        if (submitting || !validate()) {
+            return
+        }
+        const params = {
+            loginInfo: loginData.username.trim(),
+            password: loginData.password,
+            imgCode: loginData.captcha.trim(),
+        }
+        setSubmitting(true)
+        try {
+            const res = await RequestLogin(params)
             setToken(res.data.token)
             dispatch(setUserInfo(res.data))
             dispatch(openSuccessNotification('登录成功!'))
-            history.push('/home')
-        })
+            history.replace('/home')
+        } finally {
+            setSubmitting(false)
+        }
     }
     const handleClickShowPassword = (e) => {
         e.preventDefault()
@@ -147,16 +176,27 @@ const LoginForm = () => {
                             </Typography>
                         </div>
                     </div>
-                    <Grid item className={classnames(classes.right, LoginFormStyles.right)} xs={10} md={5}>
+                    <Grid item component="form" onSubmit={loginHandler} noValidate className={classnames(classes.right, LoginFormStyles.right)} xs={10} md={5}>
                         <Typography variant={'h4'} className={classnames(LoginFormStyles.header, classes.alignSelf)}>
                             登录
                         </Typography>
                         <Grid container justify={'center'}>
-                            <TextField name={'username'} id={'username'} label={'用户名'} fullWidth value={loginData.username} onChange={changeHandler}/>
+                            <TextField
+                                name="username"
+                                id="username"
+                                label="用户名 / 邮箱 / 手机号"
+                                fullWidth
+                                autoComplete="username"
+                                value={loginData.username}
+                                onChange={changeHandler}
+                                error={Boolean(fieldErrors.username)}
+                                helperText={fieldErrors.username}
+                                inputProps={{ maxLength: 100 }}
+                            />
                         </Grid>
                         <Grid container justify={'center'}>
                             {/*<TextField name={'password'} id={'password'} label={'密码'} fullWidth value={loginData.password} onChange={changeHandler}/>*/}
-                            <FormControl className={classes.formControl}>
+                            <FormControl className={classes.formControl} error={Boolean(fieldErrors.password)}>
                                 <InputLabel htmlFor="filled-adornment-password">密码</InputLabel>
                                 <Input
                                     name={'password'}
@@ -164,10 +204,13 @@ const LoginForm = () => {
                                     type={showPassword ? 'text' : 'password'}
                                     value={loginData.password}
                                     onChange={changeHandler}
+                                    autoComplete="current-password"
+                                    inputProps={{ maxLength: 128 }}
                                     endAdornment={
                                         <InputAdornment position="end">
                                             <IconButton
-                                                aria-label="toggle password visibility"
+                                                type="button"
+                                                aria-label="显示或隐藏密码"
                                                 onClick={handleClickShowPassword}
                                             >
                                                 {showPassword ? <Visibility /> : <VisibilityOff />}
@@ -175,18 +218,32 @@ const LoginForm = () => {
                                         </InputAdornment>
                                     }
                                 />
+                                {fieldErrors.password && <FormHelperText>{fieldErrors.password}</FormHelperText>}
                             </FormControl>
                         </Grid>
                         <Grid container justify={'center'} className={LoginFormStyles.captchaContainer}>
-                            <TextField name={'captcha'} id={'captcha'} label={'验证码'} fullWidth value={loginData.captcha} onChange={changeHandler}/>
+                            <TextField
+                                name="captcha"
+                                id="captcha"
+                                label="验证码"
+                                fullWidth
+                                value={loginData.captcha}
+                                onChange={changeHandler}
+                                error={Boolean(fieldErrors.captcha)}
+                                helperText={fieldErrors.captcha}
+                                inputProps={{ maxLength: 4 }}
+                            />
                             <Tooltip title={'点击更换'}>
                                 <div className={LoginFormStyles.loginCaptcha}>
-                                    <img src={captchaSrc} onClick={changeCaptcha}/>
+                                    <img src={captchaSrc} alt="图形验证码" onClick={changeCaptcha}/>
                                 </div>
                             </Tooltip>
                         </Grid>
-                        <Button variant="contained" color="primary" size="medium" className={classnames(classes.margin, classes.alignSelf, classes.loginBtn)} onClick={loginHandler}>
-                            Start
+                        <Button type="submit" variant="contained" color="primary" size="medium" disabled={submitting} className={classnames(classes.margin, classes.alignSelf, classes.loginBtn)}>
+                            {submitting ? '登录中…' : '登录'}
+                        </Button>
+                        <Button type="button" color="primary" className={classes.alignSelf} onClick={() => history.push('/register')}>
+                            没有账号？去注册
                         </Button>
                     </Grid>
                 </Grid>
