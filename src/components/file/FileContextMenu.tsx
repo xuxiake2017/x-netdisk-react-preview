@@ -11,6 +11,7 @@ import {
     Delete as DelFileIcon,
     SaveAlt as DownloadFileIcon,
     ControlCamera as MoveFileIcon,
+    Share as ShareFileIcon,
 } from '@material-ui/icons';
 import PropTypes from 'prop-types'
 
@@ -90,6 +91,12 @@ const FileContextMenu = (props) => {
                 </ListItemIcon>
                 <ListItemText primary={`移动文件${props.file.isDir === 0 ? '夹' : ''}`} />
             </MenuItem>
+            <MenuItem onClick={props.onShareFile}>
+                <ListItemIcon>
+                    <ShareFileIcon />
+                </ListItemIcon>
+                <ListItemText primary="创建分享" />
+            </MenuItem>
         </StyledMenu>
     );
 }
@@ -123,6 +130,7 @@ FileContextMenu.propTypes = {
     onDelFile: PropTypes.func,
     onDownloadFile: PropTypes.func,
     onMoveFile: PropTypes.func,
+    onShareFile: PropTypes.func,
 }
 
 export default FileContextMenu

@@ -453,6 +453,7 @@ export default function PersistentDrawerLeft(props) {
                             </Collapse>
                             <ListItem
                                 button
+                                selected={location.pathname === '/share'}
                                 onClick={() => history.push("/share")}
                             >
                                 <ListItemIcon>
@@ -462,6 +463,7 @@ export default function PersistentDrawerLeft(props) {
                             </ListItem>
                             <ListItem
                                 button
+                                selected={location.pathname === '/recycle'}
                                 onClick={() => history.push("/recycle")}
                             >
                                 <ListItemIcon>

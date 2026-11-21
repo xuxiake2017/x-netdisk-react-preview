@@ -8,7 +8,7 @@ import LoginLeftBg from '../../assets/login_left_bg.jpg'
 import classnames from 'classnames'
 // 引入scss测试
 import LoginFormStyles from '../../style/LoginForm.module.scss'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import { RequestLogin } from "../../api/user";
 import AppConf from "../../conf/AppConf";
 import InputAdornment from "@material-ui/core/InputAdornment";
@@ -89,6 +89,7 @@ const LoginForm = () => {
 
     const classes = useStyles()
     const history = useHistory()
+    const location = useLocation()
     const dispatch = useDispatch()
     const [loginData, setLoginData] = React.useState({
         username: '',
@@ -156,7 +157,12 @@ const LoginForm = () => {
             setToken(res.data.token)
             dispatch(setUserInfo(res.data))
             dispatch(openSuccessNotification('登录成功!'))
-            history.replace('/home')
+            const redirect = new URLSearchParams(location.search).get('redirect')
+            if (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) {
+                history.replace(redirect)
+            } else {
+                history.replace('/home')
+            }
         } finally {
             setSubmitting(false)
         }

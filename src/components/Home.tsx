@@ -32,6 +32,7 @@ import UploadWithBusiness from "./file/UploadWithBusiness";
 import AppConf from "../conf/AppConf"
 import ConfirmDialog from "./common/ConfirmDialog";
 import MoveFileDialog from "./file/MoveFileDialog";
+import ShareCreateDialog from "./share/ShareCreateDialog";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -395,6 +396,11 @@ const Home = () => {
         setFileContextMenuOpen(false)
         setMoveFileDialogOpen(true)
     }
+    const handleShareFile = () => {
+        setFileContextMenuOpen(false)
+        setShareDialogOpen(true)
+    }
+    const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
     const [delFileDialogOpen, setDelFileDialogOpen] = React.useState(false)
     const handleDelFileDialogClose = () => {
         setDelFileDialogOpen(false)
@@ -433,6 +439,11 @@ const Home = () => {
                     />
                 )
             }
+            <ShareCreateDialog
+                open={shareDialogOpen}
+                onClose={() => setShareDialogOpen(false)}
+                file={selectFile}
+            />
             <Navbar>
                 <UploadWithBusiness ref={uploadRef} onReLoad={() => {
                     reLoad(filters)
@@ -461,6 +472,7 @@ const Home = () => {
                         onDelFile={handleDelFile}
                         onDownloadFile={handleDownloadFile}
                         onMoveFile={handleMoveFile}
+                        onShareFile={handleShareFile}
                     />
                     <Scrollbars onScrollFrame={handleScrollFrame} onUpdate={handleScrollUpdate} autoHide>
                         <FileList

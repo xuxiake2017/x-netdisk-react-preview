@@ -34,7 +34,8 @@ const AuthRoute = (props) => {
     })
     if (token) {
         if (pathname === '/login' || pathname === '/') {
-            return redirectRoute('/home')
+            const redirect = new URLSearchParams(history.location.search).get('redirect')
+            return redirectRoute(redirect && redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/home')
         } else {
             if (user) {
                 return next()

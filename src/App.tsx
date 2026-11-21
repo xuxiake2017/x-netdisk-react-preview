@@ -16,6 +16,9 @@ import AuthRoute from "./components/route/AuthRoute";
 import Register from "./components/login/Register";
 import ImageView from "./components/filePreview/ImageView";
 import MediaPreview from "./components/filePreview/MediaPreview";
+import SharePage from "./components/share/SharePage";
+import ShareManage from "./components/share/ShareManage";
+import RecycleBin from "./components/recycle/RecycleBin";
 
 export default function App(props) {
 
@@ -77,6 +80,15 @@ export default function App(props) {
                         <AuthRoute path="/mediaPreview/:fileKey">
                             <MediaPreview/>
                         </AuthRoute>
+                        <AuthRoute path="/share">
+                            <ShareManage/>
+                        </AuthRoute>
+                        <AuthRoute path="/recycle">
+                            <RecycleBin/>
+                        </AuthRoute>
+                        <Route path="/s/:shareId">
+                            <SharePage/>
+                        </Route>
                     </Switch>
                 </div>
             </ThemeProvider>
