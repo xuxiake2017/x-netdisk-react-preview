@@ -234,7 +234,10 @@ export default function PersistentDrawerLeft(props) {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <MenuItem onClick={handleMenuClose}>用户信息</MenuItem>
+            <MenuItem onClick={() => {
+                handleMenuClose()
+                history.push('/userInfo')
+            }}>用户信息</MenuItem>
             <MenuItem onClick={handleLogout}>退出账户</MenuItem>
         </Menu>
     );
@@ -473,6 +476,7 @@ export default function PersistentDrawerLeft(props) {
                             </ListItem>
                             <ListItem
                                 button
+                                selected={location.pathname === '/userInfo'}
                                 onClick={() => history.push("/userInfo")}
                             >
                                 <ListItemIcon>

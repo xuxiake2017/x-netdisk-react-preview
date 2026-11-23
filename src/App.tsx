@@ -19,6 +19,7 @@ import MediaPreview from "./components/filePreview/MediaPreview";
 import SharePage from "./components/share/SharePage";
 import ShareManage from "./components/share/ShareManage";
 import RecycleBin from "./components/recycle/RecycleBin";
+import UserInfo from "./components/user/UserInfo";
 
 export default function App(props) {
 
@@ -85,6 +86,9 @@ export default function App(props) {
                         </AuthRoute>
                         <AuthRoute path="/recycle">
                             <RecycleBin/>
+                        </AuthRoute>
+                        <AuthRoute path="/userInfo">
+                            <UserInfo/>
                         </AuthRoute>
                         <Route path="/s/:shareId">
                             <SharePage/>
