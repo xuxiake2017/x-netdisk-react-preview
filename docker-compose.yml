@@ -3,8 +3,7 @@ services:
     build:
       context: .
       args:
-        # 浏览器访问的接口地址（构建时写入），如 http://192.168.5.189:8282/netdisk
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://127.0.0.1:8080/netdisk}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/netdisk}
     image: x-netdisk-react:latest
     container_name: x-netdisk-react
     ports:

@@ -8,8 +8,8 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-# 构建时写入接口地址，需能从浏览器直接访问（如 http://192.168.5.189:8282/netdisk）
-ARG VITE_API_BASE_URL
+# 前端默认访问同源 /netdisk，由外部网关或部署层负责路由。
+ARG VITE_API_BASE_URL=/netdisk
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN pnpm build
 

@@ -3,7 +3,7 @@ const baseUrl = () => {
         return '/netdisk'
     }
 
-    return import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8080/netdisk'
+    return import.meta.env.VITE_API_BASE_URL || '/netdisk'
 }
 
 const AppConf = { baseUrl }
