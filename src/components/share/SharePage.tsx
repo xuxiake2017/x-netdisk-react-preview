@@ -43,6 +43,7 @@ import {
     GetShareSubList,
     SaveShareToCloud
 } from '../../api/share'
+import { GetInfo } from '../../api/user'
 import { getToken, removeToken } from '../../utils/auth'
 import {
     buildShareUrl,
@@ -57,7 +58,7 @@ import {
     SHARE_UN_AUTHENTICATED
 } from '../../utils/share'
 import { fileIcoFilter, formatFileSize } from '../../utils/FileUtils'
-import { openErrNotification, openSuccessNotification } from '../../actions'
+import { openErrNotification, openSuccessNotification, setUserInfo } from '../../actions'
 
 const PREVIEWABLE_FILE_TYPES = [1, 2, 3, 4, 11, 12, 13, 14]
 const DOC_FILE_TYPES = [1, 11, 12, 13, 14]
@@ -491,6 +492,10 @@ const SharePage = () => {
         }).then(res => {
             if (res.code === 20000) {
                 dispatch(openSuccessNotification(res.msg || '文件已保存到“我的资源”！'))
+                // 保存文件占用了容量，同步刷新侧边栏的存储空间信息
+                GetInfo().then(info => {
+                    dispatch(setUserInfo(info.data))
+                }).catch(() => {})
                 return
             }
             if (res.code === SHARE_NOT_AUTHENTICATED || res.code === SHARE_UN_AUTHENTICATED) {
