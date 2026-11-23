@@ -1,5 +1,5 @@
 // @ts-nocheck -- Legacy module pending typed refactor.
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import {
     Switch,
     Route
@@ -7,19 +7,20 @@ import {
 import Login from "./components/login/Login";
 import { useDispatch, useSelector } from "react-redux"
 import { setClientHeight, setClientWidth } from "./actions";
-import { CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
-import Home from "./components/Home";
+import { CircularProgress, CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
 import { GlobalStyle } from "./style/GlobalStyle";
 import { useHistory } from "react-router-dom";
 import Notification from "./components/common/Notification";
 import AuthRoute from "./components/route/AuthRoute";
-import Register from "./components/login/Register";
 import ImageView from "./components/filePreview/ImageView";
-import MediaPreview from "./components/filePreview/MediaPreview";
-import SharePage from "./components/share/SharePage";
-import ShareManage from "./components/share/ShareManage";
-import RecycleBin from "./components/recycle/RecycleBin";
-import UserInfo from "./components/user/UserInfo";
+
+const Home = lazy(() => import("./components/Home"));
+const Register = lazy(() => import("./components/login/Register"));
+const MediaPreview = lazy(() => import("./components/filePreview/MediaPreview"));
+const SharePage = lazy(() => import("./components/share/SharePage"));
+const ShareManage = lazy(() => import("./components/share/ShareManage"));
+const RecycleBin = lazy(() => import("./components/recycle/RecycleBin"));
+const UserInfo = lazy(() => import("./components/user/UserInfo"));
 
 export default function App(props) {
 
@@ -65,7 +66,12 @@ export default function App(props) {
                 <Notification/>
                 <ImageView/>
                 <div>
-                    <Switch>
+                    <Suspense fallback={
+                        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh'}}>
+                            <CircularProgress/>
+                        </div>
+                    }>
+                        <Switch>
                         <AuthRoute exact path="/">
                             <Login/>
                         </AuthRoute>
@@ -93,7 +99,8 @@ export default function App(props) {
                         <Route path="/s/:shareId">
                             <SharePage/>
                         </Route>
-                    </Switch>
+                        </Switch>
+                    </Suspense>
                 </div>
             </ThemeProvider>
         </React.Fragment>
