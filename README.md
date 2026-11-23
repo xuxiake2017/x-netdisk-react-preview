@@ -33,6 +33,34 @@ pnpm preview
 
 生产构建输出到 `dist`。生产环境接口地址默认是 `http://127.0.0.1:8080/netdisk`，可通过 `VITE_API_BASE_URL` 覆盖。
 
+## Docker 部署
+
+```bash
+docker compose up -d --build
+```
+
+访问 <http://localhost:8088>。镜像采用两阶段构建：Node 构建静态文件，Nginx 仅托管页面，不对后端做反向代理。接口地址在构建时写入 `VITE_API_BASE_URL`，需为浏览器可直接访问的完整地址。
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `WEB_PORT` | `8088` | 宿主机映射端口 |
+| `VITE_API_BASE_URL` | `http://127.0.0.1:8080/netdisk` | 接口地址（构建参数，修改后需重新构建） |
+
+例如后端部署在其它机器：
+
+```bash
+VITE_API_BASE_URL=http://192.168.5.189:8282/netdisk docker compose up -d --build
+```
+
+也可直接使用 Docker 构建：
+
+```bash
+docker build --build-arg VITE_API_BASE_URL=http://192.168.5.189:8282/netdisk -t x-netdisk-react .
+docker run -d -p 8088:80 x-netdisk-react
+```
+
+由于页面与接口不同源时由浏览器直接请求后端，需确保后端已开启 CORS。
+
 ## 目录结构
 
 ```
