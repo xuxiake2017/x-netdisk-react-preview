@@ -1,6 +1,7 @@
 import request from '../utils/request'
 import shareRequest from '../utils/shareRequest'
 import qs from 'qs'
+import type { ApiResult, PageInfo, PageQuery } from './types'
 
 export interface ShareSummary {
     shareId: string
@@ -66,10 +67,37 @@ export interface MyShare {
     isDir: number
 }
 
-interface ShareResult<T = any> {
-    code: number
-    msg?: string
-    data: T
+export interface CheckSharePwdParams {
+    shareId: string
+    sharePwd: string
+}
+
+export interface ShareListParams {
+    shareId: string
+    sharePwd?: string
+    parentId?: number
+}
+
+export interface ShareFileParams {
+    shareId: string
+    sharePwd?: string
+    fileId: number
+}
+
+export interface CreateShareParams {
+    fileKey: string
+    isPublic: number
+    expireDays: number
+}
+
+export interface MySharePage {
+    pageInfo: PageInfo<MyShare>
+    serverHost: string
+}
+
+export interface ShareSubList {
+    nginxServer: string
+    files: ShareListFile[]
 }
 
 // 以下接口匿名可访问，结果由调用方按 code 处理
@@ -77,46 +105,46 @@ export const GetShareInfo = (shareId: string) => shareRequest({
     url: '/share/getShareFile',
     method: 'get',
     params: { shareId }
-}) as unknown as Promise<ShareResult<ShareSummary>>
+}) as unknown as Promise<ApiResult<ShareSummary>>
 
-export const CheckSharePwd = (params: { shareId: string; sharePwd: string }) => shareRequest({
+export const CheckSharePwd = (params: CheckSharePwdParams) => shareRequest({
     url: '/share/checkPwd',
     method: 'post',
     data: qs.stringify(params)
-}) as unknown as Promise<ShareResult>
+}) as unknown as Promise<ApiResult<null>>
 
-export const GetShareSubList = (params: { shareId: string; sharePwd?: string; parentId?: number }) => shareRequest({
+export const GetShareSubList = (params: ShareListParams) => shareRequest({
     url: '/share/getSubList',
     method: 'post',
     data: qs.stringify(params)
-}) as unknown as Promise<ShareResult<{ nginxServer: string; files: ShareListFile[] }>>
+}) as unknown as Promise<ApiResult<ShareSubList>>
 
-export const GetShareMediaInfo = (params: { shareId: string; sharePwd?: string; fileId: number }) => shareRequest({
+export const GetShareMediaInfo = (params: ShareFileParams) => shareRequest({
     url: '/share/getFileMediaInfo',
     method: 'post',
     data: qs.stringify(params)
-}) as unknown as Promise<ShareResult<ShareMediaInfo>>
+}) as unknown as Promise<ApiResult<ShareMediaInfo>>
 
-export const SaveShareToCloud = (params: { shareId: string; sharePwd?: string; fileId: number }) => shareRequest({
+export const SaveShareToCloud = (params: ShareFileParams) => shareRequest({
     url: '/share/saveToCloud',
     method: 'post',
     data: qs.stringify(params)
-}) as unknown as Promise<ShareResult>
+}) as unknown as Promise<ApiResult<null>>
 
 // 以下接口需要登录
-export const CreateShare = (params: { fileKey: string; isPublic: number; expireDays: number }) => request({
+export const CreateShare = (params: CreateShareParams) => request({
     url: '/share/shareFile',
     method: 'post',
     data: qs.stringify(params)
-}) as unknown as Promise<ShareResult<{ shareFile: MyShare; serverHost: string }>>
+}) as unknown as Promise<ApiResult<{ shareFile: MyShare; serverHost: string }>>
 
-export const GetMyShares = (params: { pageNum: number; pageSize: number; fileRealName?: string }) => request({
+export const GetMyShares = (params: PageQuery) => request({
     url: '/share/findAll',
     method: 'get',
     params
-}) as unknown as Promise<ShareResult<{ pageInfo: { total: number; pages: number; pageNum: number; pageSize: number; list: MyShare[] }; serverHost: string }>>
+}) as unknown as Promise<ApiResult<MySharePage>>
 
 export const DeleteMyShare = (id: number) => request({
     url: `/share/delete/${id}`,
     method: 'delete'
-}) as unknown as Promise<ShareResult>
+}) as unknown as Promise<ApiResult<null>>
