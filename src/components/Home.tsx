@@ -115,7 +115,8 @@ const Home = () => {
     // 查询过滤条件
     const filters = React.useMemo(() => ({
         parentId,
-        fileRealName: ''
+        fileRealName: '',
+        orderBy: 'uploadTime'
     }), [parentId])
     // 分页参数
     const [pagination, setPagination] = React.useState({
