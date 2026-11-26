@@ -57,6 +57,12 @@ const FileContextMenu = (props) => {
                             </ListItemIcon>
                             <ListItemText primary="进入文件夹" />
                         </MenuItem>
+                        <MenuItem onClick={props.onDownloadFile}>
+                            <ListItemIcon>
+                                <DownloadFileIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="打包下载" />
+                        </MenuItem>
                     </div>
                 )
             }

@@ -94,35 +94,54 @@ class UploadContainer extends React.Component {
         })
     }
     handleProgress(ev, rawFile) {
-        const file = this.getFile(rawFile);
-        this.props.onProgress(ev, file, this.state.uploadFiles);
-        const file_ = Object.assign({}, file)
-        file_.status = 'uploading';
-        file_.percentage = ev.percent || 0;
-        const fileList = Object.assign([], this.state.uploadFiles)
-        fileList.splice(fileList.indexOf(file), 1, file_);
-        this.setState({
-            ...this.state,
-            uploadFiles: fileList
-        })
+        let updatedFile = null;
+        let updatedFiles = null;
+        this.setState(prevState => {
+            const index = prevState.uploadFiles.findIndex(file => file.uid === rawFile.uid);
+            if (index < 0) return null;
+            const file = prevState.uploadFiles[index];
+            updatedFile = {
+                ...file,
+                status: 'uploading',
+                percentage: Math.max(file.percentage || 0, ev.percent || 0)
+            };
+            updatedFiles = [...prevState.uploadFiles];
+            updatedFiles[index] = updatedFile;
+            return {
+                ...prevState,
+                uploadFiles: updatedFiles
+            };
+        }, () => {
+            if (updatedFile) {
+                this.props.onProgress(ev, updatedFile, updatedFiles);
+            }
+        });
     }
     handleSuccess(res, rawFile) {
-        const file = this.getFile(rawFile);
-
-        if (file) {
-            const file_ = Object.assign({}, file)
-            file_.status = 'success';
-            file_.response = res;
-            const fileList = Object.assign([], this.state.uploadFiles)
-            fileList.splice(fileList.indexOf(file), 1, file_);
-            this.setState({
-                ...this.state,
-                uploadFiles: fileList
-            })
-
-            this.props.onSuccess(res, file, this.state.uploadFiles);
-            this.props.onChange(file, this.state.uploadFiles);
-        }
+        let updatedFile = null;
+        let updatedFiles = null;
+        this.setState(prevState => {
+            const index = prevState.uploadFiles.findIndex(file => file.uid === rawFile.uid);
+            if (index < 0) return null;
+            const file = prevState.uploadFiles[index];
+            updatedFile = {
+                ...file,
+                status: 'success',
+                percentage: 100,
+                response: res
+            };
+            updatedFiles = [...prevState.uploadFiles];
+            updatedFiles[index] = updatedFile;
+            return {
+                ...prevState,
+                uploadFiles: updatedFiles
+            };
+        }, () => {
+            if (updatedFile) {
+                this.props.onSuccess(res, updatedFile, updatedFiles);
+                this.props.onChange(updatedFile, updatedFiles);
+            }
+        });
     }
     handleError(err, rawFile) {
         const file = this.getFile(rawFile);

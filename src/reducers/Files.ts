@@ -8,14 +8,7 @@ const Files = (state= [], action) => {
         }
         case 'DEL_FILE': {
             const uid = action.uid
-            let i = null
-            state.forEach((file, index) => {
-                if (uid === file.uid) {
-                    i = index
-                }
-            })
-            let fileList = Object.assign([], state)
-            return fileList.splice(i, 1)
+            return state.filter(file => file.uid !== uid)
         }
         case 'CLEAR_FILE': {
             return []
