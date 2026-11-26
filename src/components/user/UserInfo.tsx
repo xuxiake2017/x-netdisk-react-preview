@@ -48,10 +48,21 @@ import {
 
 const useStyles = makeStyles((theme) => ({
     root: {
-        height: '100%',
-        overflow: 'auto',
+        height: '100%'
+    },
+    pageContent: {
+        height: 'calc(100% - 64px)',
+        overflowY: 'auto',
+        overflowX: 'hidden',
         padding: theme.spacing(2),
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        [theme.breakpoints.down('xs')]: {
+            height: 'calc(100% - 56px)',
+            padding: theme.spacing(1)
+        },
+        '@media (max-width:599.95px) and (orientation: landscape)': {
+            height: 'calc(100% - 48px)'
+        }
     },
     container: {
         maxWidth: 1080,
@@ -72,7 +83,8 @@ const useStyles = makeStyles((theme) => ({
         flex: 'none'
     },
     avatarMeta: {
-        minWidth: 0
+        minWidth: 0,
+        wordBreak: 'break-word'
     },
     avatarHint: {
         display: 'block',
@@ -126,11 +138,25 @@ const useStyles = makeStyles((theme) => ({
     codeRow: {
         display: 'flex',
         alignItems: 'flex-end',
-        marginTop: theme.spacing(1)
+        marginTop: theme.spacing(1),
+        [theme.breakpoints.down('xs')]: {
+            alignItems: 'stretch',
+            flexDirection: 'column'
+        }
     },
     codeInput: {
         flex: 1,
-        marginRight: theme.spacing(1.5)
+        marginRight: theme.spacing(1.5),
+        [theme.breakpoints.down('xs')]: {
+            marginRight: 0
+        }
+    },
+    codeButton: {
+        marginBottom: 8,
+        whiteSpace: 'nowrap',
+        [theme.breakpoints.down('xs')]: {
+            marginTop: theme.spacing(1)
+        }
     },
     dialogHint: {
         display: 'block',
@@ -406,11 +432,12 @@ const UserInfo = () => {
     return (
         <div className={classes.root}>
             <NavBar>
-                <div className={classes.container}>
-                    <Typography variant="h5" className={classes.pageTitle}>个人信息</Typography>
-                    {loading && !detail && <Loading type="DualRing" size={60}/>}
-                    {detail && (
-                        <Grid container spacing={2}>
+                <div className={classes.pageContent}>
+                    <div className={classes.container}>
+                        <Typography variant="h5" className={classes.pageTitle}>个人信息</Typography>
+                        {loading && !detail && <Loading type="DualRing" size={60}/>}
+                        {detail && (
+                            <Grid container spacing={2}>
                             <Grid item xs={12} md={7}>
                                 <Card>
                                     <CardContent>
@@ -583,8 +610,9 @@ const UserInfo = () => {
                                     </CardContent>
                                 </Card>
                             </Grid>
-                        </Grid>
-                    )}
+                            </Grid>
+                        )}
+                    </div>
                 </div>
                 <Dialog open={bindDialog.open} onClose={closeBindDialog} maxWidth="xs" fullWidth>
                     <DialogTitle>{isEmailDialog ? '修改邮箱' : '修改手机号'}</DialogTitle>
@@ -612,7 +640,7 @@ const UserInfo = () => {
                                 variant="outlined"
                                 onClick={handleSendCode}
                                 disabled={bindDialog.sending || bindDialog.countdown > 0}
-                                style={{marginBottom: 8, whiteSpace: 'nowrap'}}
+                                className={classes.codeButton}
                             >
                                 {bindDialog.countdown > 0
                                     ? `${bindDialog.countdown}s 后重发`

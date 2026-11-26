@@ -9,10 +9,21 @@ import DialogActions from "@material-ui/core/DialogActions";
 import PropTypes from 'prop-types'
 import {makeStyles} from "@material-ui/core/styles";
 
-const useStyles = makeStyles(() => (
+const useStyles = makeStyles((theme) => (
     {
         paper: {
-            width: props => props.width
+            width: props => props.width,
+            maxWidth: 520,
+            [theme.breakpoints.down('sm')]: {
+                width: 'calc(100% - 48px)',
+                maxWidth: 520,
+                margin: theme.spacing(3)
+            },
+            [theme.breakpoints.down('xs')]: {
+                width: 'calc(100% - 32px)',
+                maxWidth: 'calc(100% - 32px)',
+                margin: theme.spacing(2)
+            }
         }
     }
 ))
@@ -54,7 +65,7 @@ const ConfirmDialog = ({ open, onClose, onConfirm, title, ...rest }) => {
 }
 
 ConfirmDialog.defaultProps = {
-    width: '30%'
+    width: '420px'
 }
 
 ConfirmDialog.propTypes = {

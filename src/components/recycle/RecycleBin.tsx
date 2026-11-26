@@ -16,14 +16,15 @@ import {
     TableRow,
     TextField,
     Tooltip,
-    Typography
+    Typography,
+    useMediaQuery
 } from '@material-ui/core'
 import {
     DeleteForever as DeleteForeverIcon,
     Restore as RestoreIcon,
     Search as SearchIcon
 } from '@material-ui/icons'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, useTheme } from '@material-ui/core/styles'
 import NavBar from '../NavBar'
 import MySvgIcon from '../common/SvgIcon'
 import Loading from '../common/Loading'
@@ -44,7 +45,10 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
         flexDirection: 'column',
         padding: theme.spacing(2),
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        [theme.breakpoints.down('xs')]: {
+            padding: theme.spacing(1)
+        }
     },
     toolbar: {
         display: 'flex',
@@ -54,14 +58,34 @@ const useStyles = makeStyles((theme) => ({
     },
     search: {
         width: 260,
-        marginRight: theme.spacing(2)
+        marginRight: theme.spacing(2),
+        [theme.breakpoints.down('xs')]: {
+            width: '100%',
+            marginRight: 0
+        }
+    },
+    searchButton: {
+        [theme.breakpoints.down('xs')]: {
+            display: 'none'
+        }
     },
     hint: {
         color: theme.palette.text.secondary,
         fontSize: 12
     },
     grow: {
-        flex: 1
+        flex: 1,
+        [theme.breakpoints.down('xs')]: {
+            display: 'none'
+        }
+    },
+    summary: {
+        textAlign: 'right',
+        [theme.breakpoints.down('xs')]: {
+            width: '100%',
+            marginTop: theme.spacing(1),
+            textAlign: 'left'
+        }
     },
     tableWrap: {
         flex: 1,
@@ -93,6 +117,71 @@ const useStyles = makeStyles((theme) => ({
         textAlign: 'center',
         padding: theme.spacing(6, 2),
         color: theme.palette.text.secondary
+    },
+    mobileList: {
+        display: 'grid',
+        gap: theme.spacing(1.5),
+        paddingBottom: theme.spacing(1)
+    },
+    mobileCard: {
+        borderRadius: theme.spacing(1)
+    },
+    mobileCardContent: {
+        '&:last-child': {
+            paddingBottom: theme.spacing(2)
+        }
+    },
+    mobileHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        minWidth: 0
+    },
+    mobileName: {
+        minWidth: 0,
+        flex: 1
+    },
+    mobileNameText: {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap'
+    },
+    mobileDetails: {
+        display: 'grid',
+        gridTemplateColumns: '76px minmax(0, 1fr)',
+        rowGap: theme.spacing(0.75),
+        marginTop: theme.spacing(1.5),
+        fontSize: 14
+    },
+    detailLabel: {
+        color: theme.palette.text.secondary
+    },
+    mobileActions: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+        gap: theme.spacing(1),
+        marginTop: theme.spacing(2),
+        '& .MuiButton-root': {
+            minWidth: 0
+        }
+    },
+    pagination: {
+        flex: 'none',
+        [theme.breakpoints.down('xs')]: {
+            '& .MuiTablePagination-toolbar': {
+                minHeight: 48,
+                paddingLeft: 0
+            },
+            '& .MuiTablePagination-spacer': {
+                display: 'none'
+            },
+            '& .MuiTablePagination-caption': {
+                flex: 1,
+                textAlign: 'right'
+            },
+            '& .MuiTablePagination-actions': {
+                marginLeft: 0
+            }
+        }
     }
 }))
 
@@ -128,6 +217,8 @@ const renderRemaining = (overTime, classes) => {
 
 const RecycleBin = () => {
     const classes = useStyles()
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
     const dispatch = useDispatch()
     const [items, setItems] = React.useState([])
     const [loading, setLoading] = React.useState(false)
@@ -253,9 +344,9 @@ const RecycleBin = () => {
                             )
                         }}
                     />
-                    <Button type="submit" color="primary" variant="outlined">搜索</Button>
+                    <Button className={classes.searchButton} type="submit" color="primary" variant="outlined">搜索</Button>
                     <div className={classes.grow}/>
-                    <div style={{textAlign: 'right'}}>
+                    <div className={classes.summary}>
                         <Typography variant="body2">共 {pagination.total} 个文件</Typography>
                         <Typography className={classes.hint}>到期文件会被自动清理，彻底删除后将无法找回</Typography>
                     </div>
@@ -269,7 +360,7 @@ const RecycleBin = () => {
                             </CardContent>
                         </Card>
                     )}
-                    {items.length > 0 && (
+                    {items.length > 0 && !isMobile && (
                         <TableContainer>
                             <Table size="small">
                                 <TableHead>
@@ -334,15 +425,72 @@ const RecycleBin = () => {
                             </Table>
                         </TableContainer>
                     )}
+                    {items.length > 0 && isMobile && (
+                        <div className={classes.mobileList}>
+                            {items.map(item => (
+                                <Card key={item.recycleId} className={classes.mobileCard} variant="outlined">
+                                    <CardContent className={classes.mobileCardContent}>
+                                        <div className={classes.mobileHeader}>
+                                            <MySvgIcon
+                                                name={fileIcoFilter(item.fileType)}
+                                                className={classes.fileIcon}
+                                                width={'28px'}
+                                                height={'28px'}
+                                            />
+                                            <div className={classes.mobileName}>
+                                                <Typography className={classes.mobileNameText} variant="subtitle2">
+                                                    {item.fileName}
+                                                </Typography>
+                                                <Typography variant="caption" color="textSecondary">
+                                                    {item.isDir === 0 ? '文件夹' : (item.fileSize == null ? '--' : formatFileSize(item.fileSize))}
+                                                </Typography>
+                                            </div>
+                                        </div>
+                                        <div className={classes.mobileDetails}>
+                                            <span className={classes.detailLabel}>删除时间</span>
+                                            <span>{formatTime(item.deleteTime)}</span>
+                                            <span className={classes.detailLabel}>剩余保留</span>
+                                            <div>{renderRemaining(item.overTime, classes)}</div>
+                                        </div>
+                                        <div className={classes.mobileActions}>
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                color="primary"
+                                                startIcon={<RestoreIcon/>}
+                                                disabled={busyId === item.recycleId}
+                                                onClick={() => handleRestore(item)}
+                                            >
+                                                恢复
+                                            </Button>
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                color="secondary"
+                                                startIcon={<DeleteForeverIcon/>}
+                                                disabled={busyId === item.recycleId}
+                                                onClick={() => setDeleteTarget(item)}
+                                            >
+                                                彻底删除
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
                     {loading && items.length > 0 && <Loading type="DualRing" size={40}/>}
                 </div>
                 {pagination.total > 0 && (
                     <TablePagination
+                        className={classes.pagination}
                         component="div"
                         count={pagination.total}
                         page={pagination.page}
                         rowsPerPage={pagination.rowsPerPage}
-                        rowsPerPageOptions={[5, 10, 20]}
+                        rowsPerPageOptions={isMobile ? [] : [5, 10, 20]}
+                        labelRowsPerPage="每页行数"
+                        labelDisplayedRows={({from, to, count}) => `${from}-${to} / ${count}`}
                         onPageChange={(event, page) => load(page + 1, pageSizeRef.current, query)}
                         onRowsPerPageChange={(event) => {
                             const size = Number(event.target.value)

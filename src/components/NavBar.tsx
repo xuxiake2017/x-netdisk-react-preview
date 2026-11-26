@@ -1,11 +1,10 @@
 // @ts-nocheck -- Legacy module pending typed refactor.
 import React, {useCallback} from 'react';
 import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import {
     Menu as MenuIcon,
     ArrowBack as ArrowBackIcon,
-    AccountCircle,
     MoreVert as MoreIcon,
     Description as DescriptionIcon,
     Share as ShareIcon,
@@ -17,6 +16,7 @@ import {
     FolderShared,
     Delete as DeleteIcon,
     Person as PersonIcon,
+    ExitToApp as LogoutIcon,
     Brightness4 as DarkThemeTypeIcon,
     Brightness7 as LightThemeTypeIcon
 } from '@material-ui/icons';
@@ -43,7 +43,8 @@ import {
     Divider,
     IconButton,
     Tooltip,
-    Avatar
+    Avatar,
+    useMediaQuery
 } from "@material-ui/core";
 import { Logout } from '../api/user'
 import { removeToken } from "../utils/auth";
@@ -95,6 +96,7 @@ const useStyles = makeStyles((theme) => ({
     },
     drawerPaper: {
         width: drawerWidth,
+        maxWidth: 'calc(100vw - 56px)',
         overflow: "hidden"
     },
     drawerHeader: {
@@ -110,6 +112,10 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: -drawerWidth,
         overflow: "hidden",
         zIndex: theme.zIndex.drawer + 1,
+        [theme.breakpoints.down('sm')]: {
+            marginLeft: 0,
+            zIndex: 0
+        }
     },
     contentProps: props => ({
         height: `${props.clientHeight}px`
@@ -152,6 +158,9 @@ export default function PersistentDrawerLeft(props) {
     })
     const history = useHistory()
     const location = useLocation()
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+    const [mobileDrawerOpen, setMobileDrawerOpen] = React.useState(false)
     const activeCategory = location.pathname.startsWith('/home') ? getFileCategory(location.search) : undefined
     const [collapseOpen, setCollapseOpen] = React.useState(Boolean(activeCategory));
     // 通过浏览器前进后退进入分类页时，也要展开子菜单露出选中项
@@ -167,6 +176,7 @@ export default function PersistentDrawerLeft(props) {
     let drawerOpen = useSelector(state => {
         return state.appInfo.drawerOpen
     })
+    const visibleDrawerOpen = isMobile ? mobileDrawerOpen : drawerOpen
     const dispatch =  useDispatch()
 
     const toggleDrawerOpen = useCallback(
@@ -180,7 +190,23 @@ export default function PersistentDrawerLeft(props) {
         if (!activeCategory) {
             setCollapseOpen(!collapseOpen)
         }
+        if (isMobile) {
+            setMobileDrawerOpen(false)
+        }
     }
+
+    const navigateFromDrawer = (path) => {
+        history.push(path)
+        if (isMobile) {
+            setMobileDrawerOpen(false)
+        }
+    }
+
+    React.useEffect(() => {
+        if (isMobile) {
+            setMobileDrawerOpen(false)
+        }
+    }, [isMobile, location.pathname, location.search])
 
     let themeType = useSelector(({ appInfo }) => {
         return appInfo.palette.type
@@ -253,16 +279,20 @@ export default function PersistentDrawerLeft(props) {
             open={isMobileMenuOpen}
             onClose={handleMobileMenuClose}
         >
-            <MenuItem onClick={handleProfileMenuOpen}>
-                <IconButton
-                    aria-label="account of current user"
-                    aria-controls="primary-search-account-menu"
-                    aria-haspopup="true"
-                    color="inherit"
-                >
-                    <AccountCircle />
-                </IconButton>
-                <p>Profile</p>
+            <MenuItem onClick={() => {
+                handleMobileMenuClose()
+                history.push('/userInfo')
+            }}>
+                <ListItemIcon>
+                    <PersonIcon/>
+                </ListItemIcon>
+                <ListItemText primary="个人信息"/>
+            </MenuItem>
+            <MenuItem onClick={handleLogout}>
+                <ListItemIcon>
+                    <LogoutIcon/>
+                </ListItemIcon>
+                <ListItemText primary="退出账户"/>
             </MenuItem>
         </Menu>
     );
@@ -315,7 +345,11 @@ export default function PersistentDrawerLeft(props) {
                             color="inherit"
                             aria-label="open drawer"
                             onClick={() => {
-                                toggleDrawerOpen(!drawerOpen)
+                                if (isMobile) {
+                                    setMobileDrawerOpen(open => !open)
+                                } else {
+                                    toggleDrawerOpen(!drawerOpen)
+                                }
                             }}
                             edge="start"
                             className={clsx(classes.menuButton)}
@@ -385,10 +419,15 @@ export default function PersistentDrawerLeft(props) {
             {userInfo && renderMobileMenu}
             {userInfo && renderMenu}
             <Drawer
-                className={classes.drawer}
-                variant="persistent"
+                className={isMobile ? undefined : classes.drawer}
+                style={isMobile ? {zIndex: theme.zIndex.drawer} : undefined}
+                variant={isMobile ? 'temporary' : 'persistent'}
                 anchor="left"
-                open={drawerOpen}
+                open={visibleDrawerOpen}
+                onClose={() => setMobileDrawerOpen(false)}
+                ModalProps={{
+                    keepMounted: true
+                }}
                 classes={{
                     paper: classes.drawerPaper,
                 }}
@@ -443,7 +482,7 @@ export default function PersistentDrawerLeft(props) {
                                                 button
                                                 key={item.type}
                                                 selected={Boolean(activeCategory) && activeCategory.type === item.type}
-                                                onClick={() => history.push(`/home?type=${item.type}`)}
+                                                onClick={() => navigateFromDrawer(`/home?type=${item.type}`)}
                                             >
                                                 <ListItemIcon>
                                                     <CategoryIcon/>
@@ -457,7 +496,7 @@ export default function PersistentDrawerLeft(props) {
                             <ListItem
                                 button
                                 selected={location.pathname === '/share'}
-                                onClick={() => history.push("/share")}
+                                onClick={() => navigateFromDrawer("/share")}
                             >
                                 <ListItemIcon>
                                     <ShareIcon/>
@@ -467,7 +506,7 @@ export default function PersistentDrawerLeft(props) {
                             <ListItem
                                 button
                                 selected={location.pathname === '/recycle'}
-                                onClick={() => history.push("/recycle")}
+                                onClick={() => navigateFromDrawer("/recycle")}
                             >
                                 <ListItemIcon>
                                     <DeleteIcon/>
@@ -477,7 +516,7 @@ export default function PersistentDrawerLeft(props) {
                             <ListItem
                                 button
                                 selected={location.pathname === '/userInfo'}
-                                onClick={() => history.push("/userInfo")}
+                                onClick={() => navigateFromDrawer("/userInfo")}
                             >
                                 <ListItemIcon>
                                     <PersonIcon/>
@@ -497,7 +536,7 @@ export default function PersistentDrawerLeft(props) {
             </Drawer>
             <main
                 className={clsx(classes.content, classes.contentProps, {
-                    [classes.contentShift]: drawerOpen,
+                    [classes.contentShift]: !isMobile && drawerOpen,
                 })}
             >
                 <div className={classes.drawerHeader} />

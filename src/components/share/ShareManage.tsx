@@ -5,6 +5,7 @@ import {
     Button,
     Card,
     CardContent,
+    Chip,
     IconButton,
     InputAdornment,
     Table,
@@ -16,7 +17,8 @@ import {
     TableRow,
     TextField,
     Tooltip,
-    Typography
+    Typography,
+    useMediaQuery
 } from '@material-ui/core'
 import {
     Delete as DeleteIcon,
@@ -25,7 +27,7 @@ import {
     OpenInNew as OpenInNewIcon,
     Search as SearchIcon
 } from '@material-ui/icons'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, useTheme } from '@material-ui/core/styles'
 import NavBar from '../NavBar'
 import MySvgIcon from '../common/SvgIcon'
 import Loading from '../common/Loading'
@@ -48,7 +50,10 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
         flexDirection: 'column',
         padding: theme.spacing(2),
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        [theme.breakpoints.down('xs')]: {
+            padding: theme.spacing(1)
+        }
     },
     toolbar: {
         display: 'flex',
@@ -58,10 +63,23 @@ const useStyles = makeStyles((theme) => ({
     },
     search: {
         width: 260,
-        marginRight: theme.spacing(2)
+        marginRight: theme.spacing(2),
+        [theme.breakpoints.down('xs')]: {
+            width: '100%',
+            marginRight: 0
+        }
+    },
+    searchButton: {
+        [theme.breakpoints.down('xs')]: {
+            display: 'none'
+        }
     },
     summary: {
-        color: theme.palette.text.secondary
+        color: theme.palette.text.secondary,
+        [theme.breakpoints.down('xs')]: {
+            width: '100%',
+            marginTop: theme.spacing(1)
+        }
     },
     tableWrap: {
         flex: 1,
@@ -91,6 +109,76 @@ const useStyles = makeStyles((theme) => ({
     },
     actions: {
         whiteSpace: 'nowrap'
+    },
+    mobileList: {
+        display: 'grid',
+        gap: theme.spacing(1.5),
+        paddingBottom: theme.spacing(1)
+    },
+    mobileCard: {
+        borderRadius: theme.spacing(1)
+    },
+    mobileCardContent: {
+        '&:last-child': {
+            paddingBottom: theme.spacing(2)
+        }
+    },
+    mobileHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        minWidth: 0
+    },
+    mobileName: {
+        minWidth: 0,
+        flex: 1
+    },
+    mobileNameText: {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap'
+    },
+    mobileChips: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: theme.spacing(1),
+        margin: theme.spacing(1.5, 0)
+    },
+    mobileDetails: {
+        display: 'grid',
+        gridTemplateColumns: '88px minmax(0, 1fr)',
+        rowGap: theme.spacing(0.75),
+        fontSize: 14
+    },
+    detailLabel: {
+        color: theme.palette.text.secondary
+    },
+    mobileActions: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+        gap: theme.spacing(1),
+        marginTop: theme.spacing(2),
+        '& .MuiButton-root': {
+            minWidth: 0
+        }
+    },
+    pagination: {
+        flex: 'none',
+        [theme.breakpoints.down('xs')]: {
+            '& .MuiTablePagination-toolbar': {
+                minHeight: 48,
+                paddingLeft: 0
+            },
+            '& .MuiTablePagination-spacer': {
+                display: 'none'
+            },
+            '& .MuiTablePagination-caption': {
+                flex: 1,
+                textAlign: 'right'
+            },
+            '& .MuiTablePagination-actions': {
+                marginLeft: 0
+            }
+        }
     }
 }))
 
@@ -98,6 +186,8 @@ const DEFAULT_PAGE_SIZE = 10
 
 const ShareManage = () => {
     const classes = useStyles()
+    const theme = useTheme()
+    const isMobile = useMediaQuery(theme.breakpoints.down('xs'))
     const dispatch = useDispatch()
     const history = useHistory()
     const [shares, setShares] = React.useState([])
@@ -207,7 +297,7 @@ const ShareManage = () => {
                             )
                         }}
                     />
-                    <Button type="submit" color="primary" variant="outlined">搜索</Button>
+                    <Button className={classes.searchButton} type="submit" color="primary" variant="outlined">搜索</Button>
                     <div style={{flex: 1}}/>
                     <Typography className={classes.summary}>共 {pagination.total} 个分享</Typography>
                 </form>
@@ -220,7 +310,7 @@ const ShareManage = () => {
                             </CardContent>
                         </Card>
                     )}
-                    {shares.length > 0 && (
+                    {shares.length > 0 && !isMobile && (
                         <TableContainer>
                             <Table size="small">
                                 <TableHead>
@@ -308,14 +398,96 @@ const ShareManage = () => {
                             </Table>
                         </TableContainer>
                     )}
+                    {shares.length > 0 && isMobile && (
+                        <div className={classes.mobileList}>
+                            {shares.map(share => {
+                                const expired = Boolean(share.overTime && isShareExpired(share.overTime))
+                                const isPublic = share.isPublic === 1 || (share.isPublic !== 0 && !share.sharePwd)
+                                return (
+                                    <Card key={share.id} className={classes.mobileCard} variant="outlined">
+                                        <CardContent className={classes.mobileCardContent}>
+                                            <div className={classes.mobileHeader}>
+                                                <MySvgIcon
+                                                    name={fileIcoFilter(share.fileType)}
+                                                    className={classes.fileIcon}
+                                                    width={'28px'}
+                                                    height={'28px'}
+                                                />
+                                                <div className={classes.mobileName}>
+                                                    <Typography className={classes.mobileNameText} variant="subtitle2">
+                                                        {share.fileName}
+                                                    </Typography>
+                                                    <Typography variant="caption" color="textSecondary">
+                                                        {share.isDir === 0 ? '文件夹' : formatFileSize(share.fileSize)}
+                                                    </Typography>
+                                                </div>
+                                            </div>
+                                            <div className={classes.mobileChips}>
+                                                <Chip size="small" label={isPublic ? '公开分享' : '私密分享'} color={isPublic ? 'primary' : 'default'}/>
+                                                <Chip size="small" label={expired ? '已过期' : '有效'} color={expired ? 'secondary' : 'default'}/>
+                                            </div>
+                                            <div className={classes.mobileDetails}>
+                                                <span className={classes.detailLabel}>提取码</span>
+                                                <span>{share.sharePwd || '无需提取码'}</span>
+                                                <span className={classes.detailLabel}>创建时间</span>
+                                                <span>{formatShareTime(share.shareTime)}</span>
+                                                <span className={classes.detailLabel}>有效期至</span>
+                                                <span>{share.overTime ? formatShareTime(share.overTime) : '永久有效'}</span>
+                                                <span className={classes.detailLabel}>访问/下载/保存</span>
+                                                <span>{`${share.accessTimes || 0} / ${share.downloadTimes || 0} / ${share.saveTimes || 0}`}</span>
+                                            </div>
+                                            <div className={classes.mobileActions}>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<FileCopyIcon/>}
+                                                    onClick={() => handleCopy(buildShareUrl(share.shareId), '链接')}
+                                                >
+                                                    复制链接
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<OpenInNewIcon/>}
+                                                    onClick={() => handleOpen(share)}
+                                                >
+                                                    打开
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    startIcon={<GetAppIcon/>}
+                                                    onClick={() => handleDownload(share)}
+                                                >
+                                                    下载
+                                                </Button>
+                                                <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    color="secondary"
+                                                    startIcon={<DeleteIcon/>}
+                                                    onClick={() => setDeleteTarget(share)}
+                                                >
+                                                    取消分享
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )
+                            })}
+                        </div>
+                    )}
                 </div>
                 {pagination.total > 0 && (
                     <TablePagination
+                        className={classes.pagination}
                         component="div"
                         count={pagination.total}
                         page={pagination.page}
                         rowsPerPage={pagination.rowsPerPage}
-                        rowsPerPageOptions={[5, 10, 20]}
+                        rowsPerPageOptions={isMobile ? [] : [5, 10, 20]}
+                        labelRowsPerPage="每页行数"
+                        labelDisplayedRows={({from, to, count}) => `${from}-${to} / ${count}`}
                         onPageChange={(event, page) => load(page + 1, pageSizeRef.current, query)}
                         onRowsPerPageChange={(event) => {
                             const size = Number(event.target.value)
