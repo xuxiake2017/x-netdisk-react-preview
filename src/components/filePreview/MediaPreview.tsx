@@ -9,6 +9,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import FILE_TYPE from "../../utils/FileUtils";
 import MusicPlayer from "./MusicPlayer";
 import DocPreview from "./DocPreview";
+import TextPreview from "./TextPreview";
 import { drawerToggleAction } from "../../actions";
 
 // 记录由应用内跳转打开的预览，刷新后仍可后退回原文件夹
@@ -47,6 +48,7 @@ const MediaPreview = (props) => {
     const [mediaFile, setMediaFile] = React.useState(null)
     const [audio, setAudio] = React.useState(null)
     const [isDocPreview, setIsDocPreview] = React.useState(false)
+    const [isTextPreview, setIsTextPreview] = React.useState(false)
     const handleBack = () => {
         if (sessionStorage.getItem(IN_APP_PREVIEW_KEY) === fileKey) {
             history.goBack()
@@ -105,10 +107,12 @@ const MediaPreview = (props) => {
                         cover: data.fileMedia.musicPoster
                     }])
                 }
-                if (data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_WORD
+                const extension = (data.fileOrigin.fileExtName || '').toLowerCase()
+                if (extension === 'txt' || extension === 'csv') {
+                    setIsTextPreview(true)
+                } else if (data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_WORD
                     || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_POWERPOINT
                     || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_EXCEL
-                    || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_TXT
                     || data.fileOrigin.fileType === FILE_TYPE.FILE_TYPE_OF_PDF) {
                     setIsDocPreview(true)
                 }
@@ -119,13 +123,14 @@ const MediaPreview = (props) => {
             setMediaFile(null)
             setAudio(null)
             setIsDocPreview(false)
+            setIsTextPreview(false)
         }
     }, [])
     return (
         <React.Fragment>
             <NavBar title={mediaFile ? mediaFile.fileName : ''} onBack={handleBack}>
                 {
-                    !isDocPreview && (
+                    !isDocPreview && !isTextPreview && (
                         <div className={classes.root}>
                             {
                                 playerProps && (
@@ -150,6 +155,11 @@ const MediaPreview = (props) => {
                             previewUrl: mediaFile.fileOrigin.previewUrl,
                             fileName: mediaFile.fileName
                         }}/>
+                    )
+                }
+                {
+                    mediaFile && isTextPreview && (
+                        <TextPreview fileKey={fileKey}/>
                     )
                 }
             </NavBar>

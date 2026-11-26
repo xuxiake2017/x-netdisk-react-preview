@@ -118,6 +118,15 @@ export interface FileMediaQuery {
     fileKey: string
 }
 
+export interface TextPreviewInfo {
+    fileKey: string
+    fileName: string
+    fileExtName: string
+    fileSize: number
+    encoding: string
+    content: string
+}
+
 export const GetFileList = (params: FileListParams) => {
     return request({
         url: '/file/listFile',
@@ -181,6 +190,14 @@ export const GetFileMediaInfo = (params: FileMediaQuery) => {
         method: 'post',
         data: qs.stringify(params)
     }) as unknown as Promise<ApiResult<FileMediaDetail>>
+}
+
+export const GetTextPreview = (params: FileMediaQuery) => {
+    return request({
+        url: '/file/textPreview',
+        method: 'get',
+        params
+    }) as unknown as Promise<ApiResult<TextPreviewInfo>>
 }
 
 export const MkDir = (params: MkDirParams) => {
